@@ -1,0 +1,21 @@
+import Cerebras from '@cerebras/cerebras_cloud_sdk';
+
+  const cerebras = new Cerebras({
+    apiKey: process.env['CEREBRAS_API_KEY']
+  });
+
+  async function main() {
+    const completion = await cerebras.chat.completions.create({
+      messages: [{"role":"user","content":"Why is fast inference important?"}],
+      model: 'qwen-3.8-27b',
+      max_completion_tokens: 1024,
+      temperature: 0.2,
+      top_p: 1,
+      stream: false,
+    reasoning_effort: "medium"
+    });
+
+    console.log(completion.choices[0].message.content)
+  }
+
+  main();

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Engineering Sidekick"
+  short_description: "Gut-check, talk it out, plan it, grill it"
+  default_prompt: "Use $engineering gut-check on this approach before I build it."

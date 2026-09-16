@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "engineering": {
+      "source": "AntikyLabs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/general/engineering/SKILL.md",
+      "computedHash": "1c0b7da03ab966354853098b5dd7df3ae4040c2c71c2a2bcef43cd25707bc450"
+    },
+    "show-me": {
+      "source": "AntikyLabs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/general/show-me/SKILL.md",
+      "computedHash": "1be6bd4f549f3dc365c7d0b0f6633a093bc9c4fd59ccaba43a37d55394298d91"
+    }
+  }
+}

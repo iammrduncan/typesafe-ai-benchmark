@@ -1,0 +1,24 @@
+{
+  "mode": "live",
+  "model": "qwen-3.8-27b",
+  "generatedAt": "2026-09-16T22:39:27.844Z",
+  "plannedCalls": 1,
+  "conservativeCostUsd": 0.00878594,
+  "results": [
+    {
+      "id": "E7",
+      "name": "OpenAI structured output",
+      "status": 200,
+      "elapsedMs": 300.42,
+      "result": {
+        "department": "billing",
+        "refund_requested": 1
+      },
+      "usage": {
+        "prompt_tokens": 404,
+        "completion_tokens": 10,
+        "total_tokens": 414
+      }
+    }
+  ]
+}

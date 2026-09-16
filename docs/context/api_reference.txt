@@ -1,0 +1,284 @@
+OPENAI-COMPATIBLE HTTP API — CEREBRAS JUDGMENT PROXY
+Checked: 2026-09-16. Status: planned; scaffold only, no HTTP implementation yet.
+Canonical specification; api_references.txt points here.
+
+1. PUBLIC CONTRACT
+
+POST http://127.0.0.1:3000/v1/chat/completions
+Authorization: Bearer <PROXY_API_KEY>
+Content-Type: application/json
+
+Use the standard OpenAI Chat Completions request and response shapes. Context is
+messages; the output contract is response_format.json_schema. Message content is
+ordinary text. There is no state/questions envelope to encode, no extra contract
+field, and no /v1/systemone route. This explicitly supersedes the repository's
+original TypeSafe wire-compatibility target under the user's updated instruction.
+TypeSafe remains the reference for judgment semantics and example workflows.
+
+Sources inspected:
+[O1] https://developers.openai.com/api/reference/typescript/resources/chat/subresources/completions
+[O2] https://developers.openai.com/api/reference/typescript/resources/chat/subresources/completions/methods/retrieve
+[C1] https://inference-docs.cerebras.ai/models/overview
+[C2] https://inference-docs.cerebras.ai/capabilities/structured-outputs
+[C3] https://inference-docs.cerebras.ai/capabilities/reasoning
+[C4] https://inference-docs.cerebras.ai/api-reference/versions
+[T1] https://docs.typesafe.ai/api
+[T2] https://docs.typesafe.ai/primitives/choice
+[T3] https://docs.typesafe.ai/primitives/score
+[T4] https://docs.typesafe.ai/primitives/noul
+[T5] https://docs.typesafe.ai/primitives/advanced
+[T6] https://docs.typesafe.ai/confidence
+All restrictions, schema recipes, numerical policies, and errors below are our
+supported subset, not a claim of complete OpenAI or TypeSafe parity.
+
+2. REQUEST
+
+model: required, qwen-3.8-27b or gpt-oss-120b. No proprietary-model aliases.
+messages: required array, 1..64 entries. Each entry is exactly:
+  {role: "system" | "developer" | "user" | "assistant", content: string}
+Require at least one user message. Preserve supplied role boundaries and order;
+never concatenate developer instructions into untrusted user content. For the
+upstream Qwen path, map developer to system only after verifying that provider
+mapping; document this provider-specific difference. Client messages cannot
+change the server's schema-validation rules or authorize tools.
+
+response_format: required:
+  {type:"json_schema", json_schema:{name:string, strict:true, schema:object,
+                                   description?:string}}
+name: 1..64 ASCII letters, digits, underscores or hyphens; local validation.
+The root schema must be a closed object. See section 3.
+stream: optional, false only.
+n: optional, 1 only.
+
+Initial generation settings are server-owned. Explicit sampling, token-limit,
+reasoning, logprob, storage, tool, audio, and unsupported fields are rejected with
+400 unsupported_parameter, never silently ignored. response_format text or
+json_object, stream:true, content-part arrays, tool/function roles, and tools are
+outside the first supported subset. Responses API and model listing are deferred.
+This still permits an ordinary OpenAI SDK create call with messages + json_schema.
+
+Example request (ordinary OpenAI payload; no embedded TypeSafe request):
+{
+  "model": "qwen-3.8-27b",
+  "messages": [
+    {"role":"system","content":"Classify the customer message using the supplied schema."},
+    {"role":"user","content":"Please return the duplicate subscription payment."}
+  ],
+  "response_format": {
+    "type":"json_schema",
+    "json_schema": {
+      "name":"ticket_judgment",
+      "strict":true,
+      "schema": {
+        "type":"object",
+        "properties": {
+          "department":{"type":"string","enum":["billing","technical","other"],"description":"Team responsible for the main issue."},
+          "refund_requested":{"type":"number","minimum":0,"maximum":1,"description":"Estimated probability the customer requests money back."},
+          "urgency":{"type":"number","minimum":0,"maximum":2,"description":"0: no deadline; 1: soon without a deadline; 2: explicit deadline. Intermediate values allowed."}
+        },
+        "required":["department","refund_requested","urgency"],
+        "additionalProperties":false
+      }
+    }
+  },
+  "stream":false
+}
+These simple field recipes express Choice, Noul, and Score through normal schemas.
+They request direct judgments, not calibrated distributions. Use the rich recipes
+below when the application requires the full distribution and local derived math.
+
+3. SCHEMA SUPPORT AND CONTRACT GATE
+
+Initial supported subset: type (one of object/array/string/number/integer/boolean/
+null), properties, required, additionalProperties:false, description, title,
+enum, scalar const, minimum, maximum, items, and prefixItems with items:false.
+Only allow keywords applicable to the declared type. Enums are nonempty,
+homogeneous scalars consistent with type. Every object lists all its properties
+as required. Arrays use a homogeneous items schema or prefixItems + items:false.
+Reject unknown keywords rather than ignoring a requested constraint.
+
+Not initially supported: refs/remote resolution, recursive schemas, unions,
+pattern/format, conditionals, composition, defaults, arbitrary additionalProperties,
+array length constraints, and string length constraints. Some are supported by
+other services; rejection here is a deliberate bounded first-demo subset.
+Descriptions are strings. Serialize structured rubrics into description text when
+needed; this differs from TypeSafe's structured instructions/legend wire format.
+
+Validate schema complexity before compilation. Use a vetted JSON Schema validator
+with coercion, defaults, removal of additional fields, remote fetching, and custom
+code keywords disabled. Bound schema compilation work and avoid unbounded caches.
+For generic schemas: one provider call with the validated schema, then validate
+returned JSON locally against the ORIGINAL schema. Never reinterpret an arbitrary
+number field as a normalized score or a probability distribution.
+For rich recipes: compile compact internal outputs, reconstruct deterministic
+fields, then run the same original-schema validation plus the semantic checks.
+No generated code is executed. No state URLs, tools, or functions are invoked.
+
+4. RICH JUDGMENT SCHEMA RECIPES
+
+These are application conventions using ordinary JSON Schema, with no vendor
+extension keywords or special request fields. Root properties name results.
+Each is a closed object with every field required and a description giving the
+complete rubric; property names are identifiers, not hidden inference instructions.
+
+Choice record:
+  type: string with const "choice"
+  choice: string enum of 2..255 option labels
+  probabilities: closed object with exactly those option labels; each value is
+                 number, minimum 0, maximum 1. Per-option descriptions are rubrics.
+  confidence: number, minimum 0, maximum 1
+
+Score record:
+  type: string with const "score"
+  score: number, minimum 0, maximum N-1
+  legend: closed object with contiguous keys "0".."N-1", 2 <= N <= 10;
+          each property is type string with const equal to its rubric description
+  probabilities: closed object with the same index keys and [0,1] numbers
+  confidence: number, minimum 0, maximum 1
+
+Noul record:
+  type: string with const "noul"
+  noul: number, minimum 0, maximum 1
+  Put the yes/no definition in the record's description. No confidence field.
+
+Recognition is deterministic schema matching, not an LLM guess. A root whose
+properties all match these templates selects the isolated compact path. If a
+property declares type.const choice/score/noul but violates its template, reject
+400 invalid_schema; do not silently skip semantic checks. Mixing rich recipes
+with generic properties is initially rejected. Generic schemas without these
+record discriminators use the ordinary single-completion path.
+
+For each rich record, send identical message context plus that record's rubric.
+Keep root property names and json_schema.name out of inference; map them locally.
+Choice labels remain semantic context. Do not include sibling schemas or answers.
+User-supplied message text may itself mention output names; do not claim to remove
+those natural-language references. Rename invariance applies to schema-only IDs.
+
+Provider generates only {"p":[...]} for Choice/Score or {"p":0.8} for Noul.
+Choice positions use sorted code-unit label order; Score uses numeric index order.
+Constrain compact output with closed root, bounded numbers, and tuple schemas.
+Always check length, exact keys, finite values, and [0,1] ranges locally.
+
+Distribution rules:
+- Require s=sum(p)>0 and abs(s-1)<=0.000001. Normalize only accepted rounding drift
+  by dividing by s. Reject larger drift; never clamp/fill missing provider values.
+- Choice is argmax; exact ties use sorted code-unit label order.
+- Score = sum(index*p[index]); preserve fractional results. Reconstruct legend
+  from the caller's literal schema, not model-generated text.
+- Confidence = 1-H(p)/ln(N), H(p)=-sum(p*ln(p)), with 0*ln(0)=0.
+  Uniform gives 0, point mass gives 1. Only derived excursions within 1e-12 of
+  [0,1] may be clamped; otherwise fail. Do not round output probabilities.
+TypeSafe's exact confidence formula is not published in [T6]. This entropy
+statistic is local. Model-written probabilities are estimates, not calibrated
+by a valid schema. Isolated calls do not reproduce TypeSafe's internal scoring.
+
+5. RESPONSE AND USAGE
+
+HTTP 200 application/json uses the OpenAI completion envelope [O1, O2]. Synthetic
+fixture for the simple example (values and usage are not live measurements):
+{
+  "id":"chatcmpl-example",
+  "object":"chat.completion",
+  "created":1789596000,
+  "model":"qwen-3.8-27b",
+  "choices":[{
+    "index":0,
+    "message":{
+      "role":"assistant",
+      "content":"{\"department\":\"billing\",\"refund_requested\":0.9,\"urgency\":0}",
+      "refusal":null
+    },
+    "finish_reason":"stop",
+    "logprobs":null
+  }],
+  "usage":{"prompt_tokens":100,"completion_tokens":20,"total_tokens":120}
+}
+Generate a unique chatcmpl-prefixed id and actual Unix seconds. Use the resolved
+Cerebras model ID. content is JSON text of the requested object ONLY: no extra
+model/answers/usage wrapper. Validate before serialization. Return x-request-id.
+
+Aggregate provider prompt_tokens and completion_tokens; total_tokens is their
+sum. Counters must be nonnegative integers. Missing usage is provider failure,
+not invented zeros. Reasoning counts as completion tokens; isolated calls repeat
+context input. Locally reconstructed fields are not billed output tokens. This
+is actual upstream accounting, not retokenization of the returned assistant text.
+
+Return one complete result or an HTTP error. Never emit partial answers, a
+truncated success, or confident defaults. Provider refusal, tools, truncation,
+malformed content, and failed validation are explicit errors. finish_reason stop
+means the full result passed both schema and applicable semantic checks.
+
+6. LOCAL LIMITS AND ERRORS
+
+Initial local limits (not inherited OpenAI or TypeSafe guarantees):
+HTTP request: 256 KiB UTF-8; JSON depth: 32 containers (root=1).
+Schema: depth 10, 500 total properties, 500 enum entries, 64 KiB serialized bytes,
+and provider counted-schema-text cap 5,000 characters when sent directly [C2].
+Result property/option names: 1..256 UTF-8 bytes. Rich judgments: 1..32.
+Provider response per call: 256 KiB including reasoning and envelope.
+Final HTTP response: 512 KiB including escaped assistant content.
+Global provider concurrency: 4; pending work: 32 jobs; deadline: 15 seconds
+including queueing. Admit all jobs before dispatch or reject overload atomically.
+Completion budget: initially 4,096 tokens per call, to verify with boundary fixtures.
+
+Bound input/schema before compiling or inference. Check compiled prompt plus
+output reservation against account context limits. Establish a tested tokenizer
+or conservative byte bound plus chat/schema overhead; never truncate context.
+Reject duplicate object keys (including escaped-equivalent keys) before JSON.parse
+loses them. Safely handle __proto__, constructor, Unicode, and numeric-looking keys.
+
+Errors use an OpenAI-shaped body:
+{"error":{"message":"Safe summary","type":"invalid_request_error",
+          "param":null,"code":"invalid_schema"}}
+param is null or a fixed safe field path; do not echo user data. x-request-id is
+server-generated. Sanitize Retry-After on throttling/overload. Never log prompts,
+keys, raw completions, reasoning, or authorization by default.
+
+HTTP   code                          type
+400    invalid_json                  invalid_request_error
+400    invalid_request               invalid_request_error
+400    invalid_schema                invalid_request_error
+400    unsupported_parameter         invalid_request_error
+400    context_length_exceeded       invalid_request_error
+401    unauthorized                  authentication_error
+404    not_found                     invalid_request_error
+405    method_not_allowed            invalid_request_error
+413    request_too_large             invalid_request_error
+415    unsupported_media_type        invalid_request_error
+429    rate_limited                  rate_limit_error
+500    internal_error                server_error
+502    provider_unavailable          server_error
+502    invalid_provider_output       server_error
+503    overloaded                    server_error
+504    deadline_exceeded             server_error
+These exact codes and additional statuses are our local policy. SDK compatibility
+is verified by integration tests, not assumed from matching field names.
+Client disconnect aborts queued/in-flight work. Fatal rich-record failure cancels
+siblings. Always release timers/permits. Initial retries: zero; no repair or model
+fallback. Work completed before cancellation may still incur charges.
+
+7. DIRECT CEREBRAS INFERENCE
+
+Server calls https://api.cerebras.ai/v1/chat/completions with CEREBRAS_API_KEY,
+separate from PROXY_API_KEY, and X-Cerebras-Version-Patch:2 [C4]. Native fetch is
+planned; exposing an OpenAI-compatible public API does not require an OpenAI SDK
+inside the server. Use trusted provider destinations, never client URLs.
+Qwen default: reasoning_effort none. GPT OSS: low and parsed reasoning; it cannot
+disable reasoning [C3]. Temperature 0, stream false, no tools, no min_tokens.
+Strict response_format with the generic or compiled compact schema. Parse only
+message.content; validate envelopes as unknown. Schema support is model-specific
+and must be checked on the selected account before claiming live support.
+
+8. IMPLEMENTATION ACCEPTANCE AND LIMITATIONS
+
+- An ordinary OpenAI SDK call with natural-language messages and json_schema works
+  against the stub-backed HTTP server; content directly satisfies that schema.
+- Test all simple and rich recipes, generic nested schemas, mixed judgment records,
+  schema-only ID renaming, distribution edges, rejection before upstream calls,
+  provider errors, usage, cancellation, queue deadlines, and response-size bounds.
+- No TypeSafe-shaped payload hidden in message content is required or interpreted.
+- Unknown schema keywords are rejected; invalid model output is never patched into
+  success. Do not call API-shape compatibility judgment or performance parity.
+- Streaming, tools, model listing, Responses API, images, and arbitrary freeform
+  chat without a strict schema are outside the initial supported subset.
+- Public TypeSafe /v1/systemone compatibility is intentionally not a target now.

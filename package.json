@@ -15,11 +15,13 @@
     "start": "node --env-file-if-exists=.env dist/index.js",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.examples.json",
     "lint": "eslint . --max-warnings 0",
-    "test": "node --import tsx --test src/**/*.test.ts",
+    "test": "node --import tsx --test 'src/**/*.test.ts' 'examples/**/*.test.ts'",
     "build": "tsc -p tsconfig.build.json",
     "check": "npm run typecheck && npm run lint && npm test && npm run build",
     "examples": "node --import tsx examples/run.ts",
-    "examples:live": "node --env-file=.env --import tsx examples/run.ts --live"
+    "examples:live": "node --env-file=.env --import tsx examples/run.ts --live",
+    "benchmark": "node --import tsx examples/benchmark.ts",
+    "benchmark:live": "node --env-file=.env --import tsx examples/benchmark.ts --live"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

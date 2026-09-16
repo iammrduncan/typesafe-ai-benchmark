@@ -90,7 +90,7 @@ export async function createServer(options: ServerOptions) {
   };
   app.post('/v1/systemone', async (request, reply) => {
     const input = parseSystemOne(request.body, options.model ?? 'qwen-3.8-27b');
-    const result = await evaluator.evaluate(input.model, input.messages, input.questions.map(q => questionJob(q.question)), signal(request));
+    const result = await evaluator.evaluate(input.model, input.messages, input.questions.map(q => questionJob(q.question)), signal(request), request.id);
     signal(request);
     const answers = Object.fromEntries(input.questions.map(({ id, question }, index) => {
       const values = result.results[index]?.values;
@@ -106,7 +106,7 @@ export async function createServer(options: ServerOptions) {
     const input = parsed.data;
     const model = resolveModel(input.model, options.model ?? 'qwen-3.8-27b');
     const compiled = compileSchema(input.response_format.json_schema.schema);
-    const result = await evaluator.evaluate(model, input.messages, [compiled.job], signal(request));
+    const result = await evaluator.evaluate(model, input.messages, [compiled.job], signal(request), request.id);
     signal(request);
     const values = result.results[0]?.values;
     if (!values) throw new Fault('internal_error', 500);

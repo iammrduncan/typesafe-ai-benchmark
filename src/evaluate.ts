@@ -21,7 +21,7 @@ export class Evaluator {
       void task.execute().finally(() => { this.active--; this.drain(); });
     }
   }
-  async evaluate(model: Model, messages: Message[], jobs: Job[], signal: AbortSignal) {
+  async evaluate(model: Model, messages: Message[], jobs: Job[], signal: AbortSignal, requestId?: string) {
     // Preflight every job before admission, so late validation cannot spend early tokens.
     jobs.forEach(job => providerBody(model, messages, job));
     if (signal.aborted) throw new Fault('deadline_exceeded', 504);
@@ -38,7 +38,7 @@ export class Evaluator {
         cancel: () => { combined.removeEventListener('abort', onAbort); reject(new Fault('deadline_exceeded', 504)); },
         execute: async () => {
           combined.removeEventListener('abort', onAbort);
-          try { resolve(await infer(this.config, model, messages, job, combined, performance.now() - queuedAt)); }
+          try { resolve(await infer({ ...this.config, onMetric: metric => this.config.onMetric?.({ ...metric, ...(requestId ? { requestId } : {}) }) }, model, messages, job, combined, performance.now() - queuedAt)); }
           catch (error) { reject(error); siblings.abort(); }
         },
       };

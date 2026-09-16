@@ -8,6 +8,7 @@ import { compileSchema } from '../src/schema.js';
 import { providerBody } from '../src/cerebras.js';
 import { limits, parseJson, record } from '../src/json.js';
 import { examples } from './fixtures.js';
+import { decide } from './policies.js';
 
 const live = process.argv.includes('--live');
 const only = process.argv.find(arg => arg.startsWith('--only='))?.slice(7);
@@ -71,8 +72,9 @@ try {
       result = parseJson(first.message.content);
     }
     const usage = record(data) ? data.usage : undefined;
-    report.results.push({ id: example.id, name: example.name, status: response.statusCode, elapsedMs, result, usage });
-    console.log(JSON.stringify({ id: example.id, mode: report.mode, status: response.statusCode, elapsedMs, result }));
+    const decision = response.statusCode === 200 ? decide(example.id, result) : { action: 'error_no_action' };
+    report.results.push({ id: example.id, name: example.name, status: response.statusCode, elapsedMs, result, decision, usage });
+    console.log(JSON.stringify({ id: example.id, mode: report.mode, status: response.statusCode, elapsedMs, result, decision }));
     if (response.statusCode !== 200) process.exitCode = 1;
   }
   const reportPath = live ? 'docs/live-results.json' : '/tmp/typesafe-examples-stub-results.json';

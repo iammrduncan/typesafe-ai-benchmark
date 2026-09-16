@@ -1,0 +1,7 @@
+readme - note the why "waitlist ofr typesafe", "for fun and giggles", "because we can"
+readme - note the ineffeciency of this compared to typesafe ai
+readme - add how to - quick start
+readme - add why cerebras (fast)
+readme - add how to - ask an agent to replace cerebras with the backend of your choice
+make video demo, to gif, store in repo and put on readme.
+readme - benchmarks outcome

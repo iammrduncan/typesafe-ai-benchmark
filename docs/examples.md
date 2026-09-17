@@ -113,6 +113,9 @@ work. None is claimed by these examples or required to run the proxy.
 
 ## Interactive Next.js application
 
-The four browser demos now live in `packages/demos`: support routing, smart home,
-a courier control loop, and screening. Run `npm run dev` for fixtures or
+The seven-scene reel lives in `packages/demos`: ticket dispatch, street routing,
+WebGPU driving, guardrails, approvals, scoring and home automation. Home automation
+runs 24 shuffled commands against current simulated device state. Scoring has an
+adjustable strict >90% default validity threshold. Click scene items to inspect their
+input/output. The original gallery routes have been removed. Run `npm run dev` for fixtures or
 `npm run dev:live` for Cerebras. [Extension guide](../packages/demos/README.md).

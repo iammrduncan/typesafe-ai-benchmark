@@ -1,3 +1,4 @@
+import { homeCases, homeWorkItem } from './home';
 import { trafficTicket } from '../traffic';
 import { evaluationCase } from './evaluations';
 export const scenes = [
@@ -7,6 +8,7 @@ export const scenes = [
   { id: 'screen', name: 'The trust boundary.', short: 'Guardrails', kicker: '04 / INPUT SECURITY', detail: '100 incoming requests. Spot instruction attacks before they cross the boundary.', count: 100 },
   { id: 'approve', name: 'Before the agent acts.', short: 'Approvals', kicker: '05 / AGENT PERMISSIONS', detail: '100 proposed coding-agent commands. Decide what may run, without executing anything.', count: 100 },
   { id: 'judge', name: 'Put the answers to a test.', short: 'Scoring', kicker: '06 / EVALUATION', detail: '100 candidate answers against golden references. Score accuracy and validity.', count: 100 },
+  { id: 'home', name: 'A home that listens.', short: 'Home', kicker: '07 / HOME AUTOMATION', detail: '24 household requests. Lights, blinds and climate respond to typed decisions.', count: homeCases.length },
 ] as const;
 export type SceneId = typeof scenes[number]['id'];
 export type WorkItem = { id: string; title: string; context: Record<string, unknown> };
@@ -56,6 +58,7 @@ const commands = [
 ] as const;
 export function workItem(scene: SceneId, index: number): WorkItem {
   const id = `${scene.slice(0,3).toUpperCase()}-${String(index + 1).padStart(3,'0')}`;
+  if (scene === 'home') return homeWorkItem(index);
   if (scene === 'dispatch') { const ticket = trafficTicket(index); return { id, title: ticket.subject, context: ticket }; }
   if (scene === 'screen') {
     const v = guardCases[index % guardCases.length]; if (!v) throw new Error('Missing case');

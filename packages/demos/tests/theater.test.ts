@@ -8,6 +8,33 @@ import { navigationContext, exits, fixtureNext } from '../lib/theater/navigation
 import { DrivingEngine, drivingContext } from '../lib/theater/driving';
 import { localRequest } from '../lib/request';
 import { shuffledWorkload, requestTotals } from '../lib/theater/workload';
+import { demoModel } from '../lib/models';
+import { homeWorkItem } from '../lib/theater/home';
+
+test('selected model survives every demo path and unknown models never reach inference',async()=>{
+  const runtime=await createDemoRuntime({stub:true});
+  try{
+    for(const model of demoModel.options){
+      const inputs=[
+        {id:'home',text:JSON.stringify(homeWorkItem(0).context)},
+        ...(['dispatch','screen','approve','judge'] as const).map(id=>({id,text:JSON.stringify(workItem(id,1).context)})),
+        {id:'navigate',text:JSON.stringify({position:20,target:4,visited:[20]})},
+        {id:'drive',text:JSON.stringify(new DrivingEngine().state)},
+      ];
+      for(const input of inputs){
+        const response=await runtime.run({...input,model},new AbortController().signal);
+        assert.equal(response.status,200,JSON.stringify(response.body));
+        const result=z.object({model:demoModel,contract:z.object({model:demoModel}),estimatedCostUsd:z.number()}).parse(response.body);
+        assert.equal(result.model,model);assert.equal(result.contract.model,model);assert.equal(result.estimatedCostUsd,0);
+      }
+    }
+    const before=runtime.config().calls;
+    assert.equal((await runtime.run({id:'home',model:'unknown',text:JSON.stringify(homeWorkItem(0).context)},new AbortController().signal)).status,400);
+    assert.equal(runtime.config().calls,before);
+    const defaultResponse=await runtime.run({id:'home',text:JSON.stringify(homeWorkItem(0).context)},new AbortController().signal);
+    assert.equal(z.object({model:demoModel}).parse(defaultResponse.body).model,'qwen-3.8-27b');
+  }finally{await runtime.close();}
+});
 
 test('bulk dispatch shuffles a complete workload without changing its input-to-label pairing',()=>{
   for(const scene of ['dispatch','screen','approve','judge'] as const){

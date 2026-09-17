@@ -1,6 +1,8 @@
 import { z } from 'zod';
 import { invalid, badOutput } from './errors.js';
 import { limits, record } from './json.js';
+import { modelIds, type Model } from './models.js';
+export type { Model } from './models.js';
 
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 type Description = string | null | JsonValue[] | { [key: string]: JsonValue };
@@ -22,7 +24,6 @@ const question = z.discriminatedUnion('type', [
     criteria: z.strictObject({ true: description.optional(), false: description.optional() }).optional() }),
 ]);
 export type Question = z.infer<typeof question>;
-export type Model = 'qwen-3.8-27b' | 'gpt-oss-120b';
 export type Message = { role: 'system' | 'developer' | 'user' | 'assistant'; content: string };
 export type Usage = { input_tokens: number; output_tokens: number };
 export type Answer = { type: 'noul'; noul: number } |
@@ -32,7 +33,8 @@ export type NumericSlot = { type: 'number' | 'integer'; minimum: number; maximum
 export type Job = { rubric: unknown; slots: NumericSlot[]; distribution?: boolean };
 
 export function resolveModel(value: string, defaultModel: Model, alias = false): Model {
-  if (value === 'qwen-3.8-27b' || value === 'gpt-oss-120b') return value;
+  const known = modelIds.find(model => model === value);
+  if (known) return known;
   if (alias && value === 'jev-latest') return defaultModel;
   return invalid();
 }

@@ -1,9 +1,9 @@
-import { workItem, type SceneId, type WorkItem } from './data';
+import { scenes, workItem, type SceneId, type WorkItem } from './data';
 
 // Shuffle before dispatch, not after receiving results. Exported events retain
 // this exact order and every input, so an observed run can be inspected/replayed.
 export function shuffledWorkload(scene: SceneId, random: () => number = Math.random): WorkItem[] {
-  const items = Array.from({ length: 100 }, (_, i) => workItem(scene, i));
+  const items = Array.from({ length: scenes.find(s => s.id === scene)?.count ?? 0 }, (_, i) => workItem(scene, i));
   for (let i = items.length - 1; i > 0; i--) {
     const j = Math.floor(random() * (i + 1));
     const a = items[i], b = items[j];

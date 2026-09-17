@@ -7,14 +7,20 @@ front of an existing LLM. It borrows [TypeSafe.ai](https://typesafe.ai)'s
 Choice / Score / Noul interface and adds an OpenAI-compatible endpoint so existing
 LLM clients can use it too. It does not run TypeSafe's models.
 
-![Decision Theater: live WebGPU driving with structured inputs and typed controls](docs/media/theater-driving-live.png)
+[![Decision Theater demo recording](docs/media/theater-demo.gif)](docs/media/theater-demo.mp4)
 
-[Watch the actual-speed six-scene browser recording](docs/media/theater-live.webm) ·
-[Inspect the live results](docs/media/theater-live-results.json).
-The light, single-screen player includes 100-ticket categorization, structured-map
+[Watch or download the full demo (MP4)](docs/media/theater-demo.mp4) ·
+[Static screenshot](docs/media/theater.png)
+
+The animated preview shows the full recording at a reduced frame rate. The MP4
+preserves the full 71-second demo at 720p / 30 fps and is ready to upload to X.
+
+The Dracula-themed, single-screen player includes 100-ticket categorization, structured-map
 navigation, ten seconds of WebGPU city driving, 100 guardrail checks, 100 agent
-command approvals, and 100 golden-reference evaluations. Inputs stay on the left;
+command approvals, 100 golden-reference evaluations, and home automation. Inputs stay on the left;
 validated outputs stay on the right. Play one scene or run the whole slideshow.
+Select Qwen 27B or GPT OSS 120B on Cerebras. The header shows input/output
+pricing; requests, exports and cost estimates follow the selected model.
 [Verification, measurements and limitations](docs/theater-verification.md).
 
 ## Monorepo and interactive demos
@@ -22,7 +28,7 @@ validated outputs stay on the right. Play one scene or run the whole slideshow.
 ```text
 packages/api/     Fastify proxy, strict contracts, tests, CLI examples and benchmarks
 packages/demos/   Next.js + React app, demo catalog, pages and server-side handlers
-docs/             API specification, research, measurements and recordings
+docs/             API specification, research and verification summaries
 ```
 
 One npm workspace lockfile; no separate installs inside packages.
@@ -30,15 +36,16 @@ One npm workspace lockfile; no separate installs inside packages.
 ```sh
 npm ci
 npm run dev       # Next.js at http://127.0.0.1:3001; fixtures, no paid inference
-npm run dev:live  # real Cerebras decisions; uses CEREBRAS_API_KEY in root .env
+npm run dev:live  # real inference; uses provider keys in root .env
 npm run dev:api   # standalone API at http://127.0.0.1:3000
 ```
 
 **Decision Theater** supports single-stream or 2–5 concurrent bulk requests, automatic
 scene advancement, real timing/token/cost metrics, and complete session exports.
 The driving scene needs WebGPU on localhost or HTTPS. The current secure tailnet
-URL is `https://josephs-macbook-pro.taila9c138.ts.net/`; the original labs remain
-available at `/labs`.
+URL is `https://josephs-macbook-pro.taila9c138.ts.net/`. The seven-scene reel includes
+home automation, clickable request inspection and adjustable scoring validity.
+The retired labs have been removed.
 
 [How to add a demo](packages/demos/README.md#add-a-scene) ·
 [Research and source notes](docs/showcase-research.md) ·
@@ -57,12 +64,11 @@ rejected. See the [supported API](docs/context/api_reference.txt).
 
 ## Why Cerebras?
 
-Speed. A proxy that waits on a general-purpose LLM needs fast inference underneath
-it, and Cerebras lets us call that inference directly. The first Qwen run measured
-about **1,210 provider decode tokens/s** and **199 ms median request latency**.
-Those are different measurements: tiny responses spent much of their wall time
-outside decoding, giving **29.8 end-to-end output tokens/s**. These results explain
-the initial choice; they are not a claim that Cerebras is fastest for every workload.
+The theater uses Cerebras for its Qwen judgment calls. The current full-theater
+measurement accepted **521 of 523 dispatched requests**, with **234 ms median
+successful browser request latency**. It also encountered one provider rate limit
+and one driving deadline cancellation. See the [scene-by-scene benchmark](docs/benchmarks/README.md)
+for concurrency, quality, costs and limitations; this is not a provider comparison.
 
 ## The inefficient part
 
@@ -177,23 +183,26 @@ Copy this prompt and replace the bracketed provider name:
 
 ## Benchmark outcomes
 
-First live Qwen run, **2026-09-16**: 12 one-question requests, concurrency 1, one
-additional warmup. Six requests exercised each public endpoint.
+Full theater, **2026-09-17 UTC**, Qwen 3.8 27B on Cerebras, production build.
+All seven scenes were measured. The initial slideshow hit a rate limit during
+Scoring; complete Scoring and Home runs followed separately at concurrency one.
+Totals retain the interrupted work, so this was not one uninterrupted slideshow.
 
 | Measurement | Outcome |
 | --- | ---: |
-| Success / failure / retry | 12 / 0 / 0 |
-| Request latency p50 / p95 / p99 | 199 / 1,305 / 1,305 ms |
-| Input / output tokens, measured requests | 3,858 / 108 |
-| Provider-reported decode throughput | 1,210 tokens/s |
-| End-to-end output throughput | 29.8 tokens/s |
-| Estimated measured cost | $0.00398034 |
-| Estimated cost including warmup | $0.00429768 |
+| Validated / dispatched | 521 / 523 |
+| Rate limits / deadline cancellations / automatic retries | 1 / 1 / 0 |
+| Successful browser request latency p50 / p95 / p99 | 234 / 673 / 2,627 ms |
+| Reported input / output tokens | 336,730 / 5,693 |
+| Known estimated cost | $0.34184527 |
+| Sum of measured scene durations, excluding gaps/transitions | 77.52 s |
 
-The separate 100-request local upstream-stub baseline had p50 **0.82 ms** and p95
-**2.10 ms**, with synthetic token counts and zero inference cost. The live sample
-is too small for a tail-latency SLA or peak-throughput claim. Costs use dated list
-prices, not an invoice. [Method, raw results and limitations](docs/benchmarks/README.md).
+Tickets, Guardrails and Approvals used concurrency five; routing, driving, the
+complete Scoring run and Home were sequential. Quality remains separate: Tickets
+matched 75/100 fixture outputs, Scoring 93/100, Home 24/24, and Guardrails and
+Approvals 100/100 each. Driving had two collisions. Unknown usage for the failed
+and canceled requests is excluded from cost. No provider decode speed was measured.
+[Per-scene latency, method, raw exports and limitations](docs/benchmarks/README.md).
 
 ```sh
 npm run benchmark      # local HTTP + upstream stub
@@ -212,7 +221,7 @@ injection-screening judgments were wrong. Those results are preserved in the
 [live report](docs/live-results.json). A type gate blocks arbitrary generated text;
 it cannot prove semantic prompt-injection resistance or stop information from
 being encoded in allowed numbers/selections. See [security boundaries](docs/security.md).
-GPT OSS is selectable but has not been live-verified in this first run.
+The current theater benchmark covers Qwen only; it does not compare models.
 
 ## Development and documentation
 

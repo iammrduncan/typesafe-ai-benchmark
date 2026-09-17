@@ -6,8 +6,7 @@ material and an SDK snippet; no runtime implementation had to be preserved.
 
 The user's final scope requires **both** TypeSafe's `/v1/systemone` shape and
 OpenAI's `/v1/chat/completions` with ordinary messages and response_format. This
-supersedes the earlier plan for OpenAI alone. TypeScript and direct Cerebras are
-explicit choices. The canonical supported contract is [api_reference.txt](context/api_reference.txt).
+supersedes the earlier plan for OpenAI alone. TypeScript and direct Cerebras remain the selected implementation. The canonical supported contract is [api_reference.txt](context/api_reference.txt).
 
 ## Decisions
 
@@ -18,7 +17,7 @@ explicit choices. The canonical supported contract is [api_reference.txt](contex
 | OpenAI schema | Forwarding arbitrary JSON Schema allows free text and a broad attack surface; a finite compiler limits compatibility. | Compile a documented closed subset into numeric slots. One inference per schema, no field-independence or automatic TypeSafe semantic-recipe recognition. |
 | Validation | Ajv/TypeBox can cover broad JSON Schema; a compiler plus Zod fits a much smaller algebra. | Zod validates fixed boundaries; a bounded schema interpreter constructs only legal output shapes. No schema code generation, coercion, remote refs or schema cache. |
 | HTTP | Native node:http avoids a framework but adds lifecycle/body/auth plumbing. | Fastify and its bearer-auth plugin supply those primitives; custom hooks impose deadlines and safe logging. |
-| Provider | SDK offers convenience but adds a retry layer; native fetch provides cancellation and bounded reads. | Native fetch to Cerebras, version patch 2, no retries/repair/fallback. OpenAI SDK is a development dependency for client compatibility tests only. |
+| Provider | SDK offers convenience but adds a retry layer; native fetch provides cancellation and bounded reads. | Native fetch to the fixed Cerebras destination, no retries/repair/fallback. OpenAI SDK is a development dependency for client compatibility tests only. |
 | JSON parser | JSON.parse loses duplicate keys. | jsonc-parser first inspects syntax, duplicates, finite numbers and depth; comments/trailing commas are disabled. |
 
 Dependencies remove boundary-validation, authentication, HTTP-lifecycle and parsing
@@ -46,7 +45,7 @@ project scaffold. Versions and transitive dependencies are locked in package-loc
    adapter now sends exactly one. Preserve wrong judgments in the live artifact.
 7. **Benchmark.** Reproducible local/stub and live HTTP runners report latency,
    provider decode time, throughput, tokens, estimated cost, warmup, failures,
-   environment and safe per-call metadata. First live run: 12 samples plus one warmup.
+   environment and safe per-call metadata. Current evidence: all seven theater scenes, retaining rate-limit interruption and manual completion runs.
 
 ## Data path and containment
 
@@ -82,11 +81,10 @@ fallback, database, tool execution or streaming in this slice.
 
 ## Evidence limits and next experiments
 
-[Benchmark results](benchmarks/README.md) separate loopback overhead, upstream
-latency and provider decode speed. The first workload is one small question per
-request at concurrency one; it does not establish production p99 or peak tok/s.
-Live examples additionally record a thirteen-question request, without treating
-that single observation as a benchmark. Cost is dated list-price arithmetic.
+[Benchmark results](benchmarks/README.md) now report the production theater's
+seven scenes, browser request latencies, token usage, costs and fixture comparisons.
+The first slideshow stopped at a rate limit; complete scoring and home runs were
+recorded separately. This is not a saturation test or a provider decode measurement.
 
 Deferred: live GPT OSS validation; large-contract live stress tests (255 options
 are offline-tested); calibrated labeled quality evaluation; multi-question and
@@ -104,8 +102,8 @@ Delivered npm workspaces: `packages/api` owns the proxy and CLI runners;
 `packages/demos` owns a Next.js App Router application. Root scripts coordinate
 type checks, tests and builds, API first. The root `.env` and lockfile remain shared.
 
-The demo catalog provides four workflows and focused routes, using reusable React
-controls and server-only contract construction. An embedded loopback API instance
+The demo reel provides seven scenes with shared React controls and server-only
+contract construction. The original four-workflow gallery has been removed. An embedded loopback API instance
 keeps one-command local startup while preserving the actual HTTP validation path.
 See [the extension guide](../packages/demos/README.md) and
 [research notes](showcase-research.md). This supersedes the earlier UI deferral.
@@ -113,9 +111,10 @@ See [the extension guide](../packages/demos/README.md) and
 
 ## Completed theater revision
 
-The six-scene, single-screen Next.js theater is implemented with up to five concurrent
+The seven-scene, single-screen Next.js theater is implemented with up to five concurrent
 independent requests per bulk scene and sequential stateful controls. The WebGPU
 scene runs for ten monotonic seconds; request results remain atomically validated.
 See [the requirement audit](theater-verification.md) for current implementation
-decisions, test coverage, live results and known model mistakes. The old gallery
-remains at `/labs`. No cumulative demo spending or call cutoff is imposed.
+decisions, test coverage, live results and known model mistakes. Home automation
+runs 24 stateful commands. Scoring has an adjustable strict validity threshold.
+The old gallery routes and UI are removed. No cumulative demo spending or call cutoff is imposed.

@@ -1,9 +1,7 @@
 import { z } from 'zod';
+import { modelIds, models } from '@decision/api/models';
+export { models };
 
-export const demoModel = z.enum(['qwen-3.8-27b', 'gpt-oss-120b']);
+export const demoModel = z.enum(modelIds);
 export type DemoModel = z.infer<typeof demoModel>;
 export const defaultModel: DemoModel = 'qwen-3.8-27b';
-export const modelLabels: Record<DemoModel, string> = {
-  'qwen-3.8-27b': 'Qwen 27B',
-  'gpt-oss-120b': 'GPT OSS 120B',
-};

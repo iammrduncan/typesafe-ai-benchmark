@@ -9,12 +9,13 @@ import { z } from 'zod';
 
 test('provider selection indices are explicit and agree with decoding, including reversed enums', () => {
   for (const labels of [['allow', 'block'], ['block', 'allow']]) {
-    const compiled = compileSchema({ type: 'object', properties: {
+    const compiled = compileSchema({ type: 'object', description: 'Root evaluation criteria', properties: {
       decision: { type: 'string', enum: labels }, valid: { type: 'boolean' },
     }, required: ['decision', 'valid'], additionalProperties: false });
     const rubric = z.object({fields:z.array(z.object({allowedSelections:z.array(z.object({index:z.number(),value:z.union([z.string(),z.boolean()])}))}))}).parse(compiled.job.rubric);
     assert.deepEqual(rubric.fields.map(f=>f.allowedSelections), [labels.map((value,index)=>({index,value})), [{index:0,value:false},{index:1,value:true}]]);
     for (const index of [0, 1]) assert.deepEqual(compiled.decode([index,index]), {decision:labels[index],valid:index===1});
+
   }
 });
 

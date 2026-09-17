@@ -14,12 +14,24 @@ input/output feeds scroll inside their panels.
 | WebGPU driving | 10 real seconds, continuous sensor updates | Third-person angled camera following a car through a rendered city; typed steering/throttle controls |
 | Guardrails | 100 incoming requests | Allow/block decisions on a live 100-cell grid |
 | Auto approver | 100 coding-agent commands plus permissions and task context | Allow/block decisions; no command is executed |
-| LLM judge | 100 input/golden/candidate triples | Integer accuracy scores and boolean validity, displayed as a score matrix |
+| LLM judge | 100 input/golden/candidate triples | Accuracy matrix with adjustable validity threshold; green tiles and the count share the same strict comparison |
+| Home automation | 24 shuffled household requests, each with current device state | A live floor plan: four room lights, blinds and an 18–26°C thermostat; ambiguous/unsupported commands request clarification |
 
-**Play scene** runs the selected scene. **Play all six** starts at tickets, advances
-through all six, and stops at the end. **Stop** cancels dispatch and outstanding
-requests. Independent items allow 1–5 concurrent requests. Navigation and driving
+**Play scene** runs the selected scene. **Play all 7** starts at tickets, advances
+through all seven, and stops at the end. **Stop** cancels dispatch and outstanding
+requests. Independent items allow 1–5 concurrent requests. Navigation, driving and home automation
 are sequential because each decision needs the latest world state.
+
+The header dropdown offers Qwen 27B and GPT OSS 120B on Cerebras. The selected
+model's input/output prices appear beneath the dropdown. Selection is locked
+during a run; changing it clears prior results. Requests, exports and estimates
+use the chosen model. Qwen is the default; unknown model names fail before inference.
+
+Set `CEREBRAS_API_KEY` in the root `.env`. The key stays server-side. Fixture mode
+uses synthetic outputs and zero billed cost. GPT OSS can use internal reasoning
+tokens; these count in usage but reasoning is never returned. Both models use
+strict upstream schema mode and the same local output gate, without repair or
+fallback. [Current Qwen theater benchmark](../../docs/benchmarks/README.md).
 
 Each bulk run shuffles all 100 inputs before dispatch. Exports retain the actual
 request order and input/output pairing. Guardrails and approvals each contain 20
@@ -28,9 +40,23 @@ cases, repeated five times. Scoring contains 100 distinct reference/candidate pa
 six four-fact references with all completeness combinations and four edge cases.
 Explicit criterion weights total 100; missing facts earn no points for that criterion.
 These are demos, not a statistically representative benchmark dataset.
-Click an event to pin its matching input and output; **Follow live** follows actual
+Click a sorted ticket, allow/block tile, score or home command to pin its matching
+input and output. Keyboard Enter/Space works too; **Follow live** follows actual
 completion order. **Export session** saves every scene in the latest play sequence.
-Original single-request examples remain at `/labs` and `/demos/[id]`.
+The retired `/labs` and `/demos/[id]` pages and their separate UI have been removed.
+The standalone API examples remain in `packages/api/examples`.
+
+Scoring starts at **accuracy > 90%** (90 itself does not pass). Adjust the slider
+without another inference call; both the valid count and green tiles update. The
+raw model `valid` field still means complete content/format compliance and remains
+visible in the output inspector. Exports include the chosen display threshold,
+strict comparison and derived count alongside unmodified model responses.
+
+Home requests run one at a time with no artificial delay. Each validated `apply`
+decision updates only named devices; `unchanged` lights/blinds and temperature 0
+keep the current state. `clarify` never changes the house. The command history and
+devices are clickable: a selected request shows the house at that point; **Follow
+live** returns to the latest state. These are simulated devices, not integrations.
 
 ## Run locally
 
@@ -39,7 +65,7 @@ From the repository root, with Node 22 and npm 10:
 ```sh
 npm ci
 npm run dev       # fixtures, no paid inference
-npm run dev:live  # real Cerebras; uses CEREBRAS_API_KEY from root .env
+npm run dev:live  # real inference; uses provider keys from root .env
 ```
 
 For production timing: `npm run build`, then `npm run start:demos:live`.
@@ -80,12 +106,12 @@ not a multi-user public deployment and has no account system.
 The Next server imports `@decision/api` through a `server-only` runtime and calls
 its actual authenticated HTTP routes over loopback. Provider and proxy credentials
 never enter browser bundles. All output passes the same numeric codec/type gate.
-The bulk scenes use one joint OpenAI-schema judgment per item; the legacy TypeSafe
-labs retain their isolated per-question calls.
+Every scene uses one joint OpenAI-schema judgment per request. The standalone
+API continues to support both OpenAI and TypeSafe endpoints.
 
 There is no cumulative spending or call cutoff. Runtime concurrency is bounded to
 five, requests have deadlines, and cancellation propagates upstream. A scene makes
-100 calls, or bounded navigation steps, or as many driving decisions as fit in ten
+100 calls, 24 home commands, bounded navigation steps, or as many driving decisions as fit in ten
 seconds. No hidden retries, no substituted live judgments, and no artificial request
 delays. Provider quota errors remain visible and may cause incomplete results.
 

@@ -15,7 +15,7 @@ import av
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / 'docs/media'
+OUT = ROOT / '.artifacts/demo-verification'
 WIDTH, HEIGHT, FPS = 1100, 650, 50  # 20ms GIF-compatible frame quantization.
 FONT_PATH = os.environ.get('DEMO_FONT') or next((p for p in [
     '/System/Library/Fonts/Menlo.ttc',

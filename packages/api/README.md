@@ -19,7 +19,8 @@ npm run benchmark     # local HTTP baseline
 ```
 
 Live scripts and startup load the shared root `.env`. Standalone API startup needs
-CEREBRAS_API_KEY and a distinct PROXY_API_KEY of at least 16 characters. Its HTTP
+CEREBRAS_API_KEY and a distinct PROXY_API_KEY of at least 16 characters.
+CEREBRAS_MODEL sets the jev-latest default (Qwen unless changed). Its HTTP
 interfaces remain `/v1/systemone` and `/v1/chat/completions`. See the root
 [API reference](../../docs/context/api_reference.txt).
 

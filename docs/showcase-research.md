@@ -61,12 +61,12 @@ concurrent one-call OpenAI judgments and release only fully validated decisions.
 The UI measures aggregate decision and output-token throughput over actual run
 wall time; it does not simulate token streaming or substitute scripted live results.
 This retains atomic validation and uses existing HTTP routes instead of adding an
-SSE lifecycle solely for presentation. Original single-request labs remain below.
+SSE lifecycle solely for presentation. The original single-request labs were subsequently retired in favor of the reel.
 
 
 ## Single-screen theater revision
 
-The current implementation moves the spectacle into six finite scenes, with a
+The current implementation moves the spectacle into seven finite scenes, with a
 light instrument-panel palette, animated ticket sorting, a street graph, a WebGPU
 city, binary decision matrices and an evaluation score grid. Each scene shares
 input/output streams and measured receipts. The visual reference is TypeSafe's

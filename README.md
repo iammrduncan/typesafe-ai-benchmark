@@ -14,12 +14,12 @@ direct connection to real TypeSafe Jev for comparison.
 [Static screenshot](docs/media/theater.png)
 
 The animated preview shows the full recording at a reduced frame rate. The MP4
-preserves the full 71-second demo at 720p / 30 fps and is ready to upload to X.
+preserves the full 98-second side-by-side demo at 720p / 30 fps and is ready to upload to X.
 
-The Dracula-themed, single-screen player includes 100-ticket categorization, structured-map
+The Dracula-themed player includes 100-ticket categorization, structured-map
 navigation, ten seconds of WebGPU city driving, 100 guardrail checks, 100 agent
-command approvals, 100 golden-reference evaluations, and home automation. Inputs stay on the left;
-validated outputs stay on the right. Play one scene or run the whole slideshow.
+command approvals, 100 golden-reference evaluations, and home automation. Each model has its own results panel. Inspect a decision to see its input and output.
+Single-model mode also supports the whole slideshow.
 The default side-by-side view runs **Qwen 3.8 27B / Cerebras** and **Jev / TypeSafe**
 together when you press **Run demo**, using the same shuffled input order. Configure
 `CEREBRAS_API_KEY` and `JEV_KEY` in `.env`. Each side has its own timing, cost,
@@ -69,11 +69,11 @@ rejected. See the [supported API](docs/context/api_reference.txt).
 
 ## Why Cerebras?
 
-The theater uses Cerebras for its Qwen judgment calls. The current full-theater
-measurement accepted **521 of 523 dispatched requests**, with **234 ms median
-successful browser request latency**. It also encountered one provider rate limit
-and one driving deadline cancellation. See the [scene-by-scene benchmark](docs/benchmarks/README.md)
-for concurrency, quality, costs and limitations; this is not a provider comparison.
+The theater uses Cerebras for its Qwen judgment calls. In the latest paired run,
+Qwen returned **475/476 validated outputs** with **215 ms median successful browser
+request latency**, compared with **176 ms for Jev**. Each canceled one outstanding
+driving request at the ten-second deadline. See the [benchmark](docs/benchmarks/README.md)
+for costs, concurrency, judgment outcomes and limitations.
 
 ## The inefficient part
 
@@ -84,8 +84,8 @@ thirteen provider calls, with only four running concurrently. That increases inp
 tokens, cost and queueing. The generic OpenAI schema path uses one call, but its
 fields do not have the same isolation guarantee.
 
-We have not run a head-to-head TypeSafe benchmark, so there is no measured slowdown
-or cost multiplier to quote. Matching an API does not reproduce its underlying
+The theater now measures native Jev beside the joint-schema Qwen path. This does
+not benchmark the standalone proxy’s per-question TypeSafe-compatible path. Matching an API does not reproduce its underlying
 model efficiency, calibration or quality. Our entropy-based confidence is a local
 approximation. The point is an accessible experiment while on the waitlist, not a
 claim of TypeSafe parity.
@@ -188,26 +188,42 @@ Copy this prompt and replace the bracketed provider name:
 
 ## Benchmark outcomes
 
-Full theater, **2026-09-17 UTC**, Qwen 3.8 27B on Cerebras, production build.
-All seven scenes were measured. The initial slideshow hit a rate limit during
-Scoring; complete Scoring and Home runs followed separately at concurrency one.
-Totals retain the interrupted work, so this was not one uninterrupted slideshow.
+Measured **2026-09-17 UTC**, running both providers together through the production
+side-by-side theater. All seven scenes completed; no rate limits or retries.
+Static scenes used two concurrent requests per model; stateful scenes used one.
 
-| Measurement | Outcome |
-| --- | ---: |
-| Validated / dispatched | 521 / 523 |
-| Rate limits / deadline cancellations / automatic retries | 1 / 1 / 0 |
-| Successful browser request latency p50 / p95 / p99 | 234 / 673 / 2,627 ms |
-| Reported input / output tokens | 336,730 / 5,693 |
-| Known estimated cost | $0.34184527 |
-| Sum of measured scene durations, excluding gaps/transitions | 77.52 s |
+| Measurement | Qwen 3.8 27B · Cerebras | Jev · TypeSafe |
+| --- | ---: | ---: |
+| Validated / dispatched | 475 / 476 | 479 / 480 |
+| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 |
+| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms |
+| Input / output tokens | 305,915 / 5,185 | 297,984 / 43,836 |
+| Known estimated cost | $0.310581 | $0.011919 |
+| Sum of scene durations | 70.02 s | 55.54 s |
 
-Tickets, Guardrails and Approvals used concurrency five; routing, driving, the
-complete Scoring run and Home were sequential. Quality remains separate: Tickets
-matched 75/100 fixture outputs, Scoring 93/100, Home 24/24, and Guardrails and
-Approvals 100/100 each. Driving had two collisions. Unknown usage for the failed
-and canceled requests is excluded from cost. No provider decode speed was measured.
-[Per-scene latency, method, raw exports and limitations](docs/benchmarks/README.md).
+Latency measures successful browser requests, including local handling and
+validation. Scene durations exclude operator gaps; the two columns overlap in
+real time. Driving stops at ten seconds and cancels its outstanding request.
+Unknown canceled-call usage is excluded from estimated cost.
+
+| Exact fixture agreement | Qwen | Jev |
+| --- | ---: | ---: |
+| Tickets | 75/100 | 75/100 |
+| Guardrails | 100/100 | 100/100 |
+| Approvals | 100/100 | 95/100 |
+| Scoring | 93/100 | 100/100 |
+| Home | 24/24 | 15/24 |
+
+Both reached the routing destination in eight hops. Driving covered **94.6 m /
+84.2 m**, respectively, with **one collision each**. Fixture agreement is separate
+from valid output: Jev matched Scoring more often, while Qwen matched Approvals
+and Home more often in this run.
+
+Jev uses batched native questions; Qwen generates one joint schema response.
+Stateful inputs can diverge after different decisions. These measurements describe
+one synthetic development-machine run, not calibrated quality or general model parity.
+[Per-scene results, raw exports, method and limitations](docs/benchmarks/README.md).
+Recompute the table data offline with `node --import tsx scripts/summarize-comparison.mjs`.
 
 ```sh
 npm run benchmark      # local HTTP + upstream stub
@@ -226,7 +242,7 @@ injection-screening judgments were wrong. Those results are preserved in the
 [live report](docs/live-results.json). A type gate blocks arbitrary generated text;
 it cannot prove semantic prompt-injection resistance or stop information from
 being encoded in allowed numbers/selections. See [security boundaries](docs/security.md).
-The current theater benchmark covers Qwen only; it does not compare models.
+The paired theater benchmark reports both providers and preserves every fixture mismatch.
 
 ## Development and documentation
 

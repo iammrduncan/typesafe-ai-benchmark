@@ -73,9 +73,9 @@ synthetic probabilities/tokens and costs zero.
 
 Offline HTTP-stub tests cover all seven scenes, credential isolation, native
 payloads, answer validation, deadlines/cancellation, overload, error sanitization,
-no retries and pricing semantics. The integration smoke test is limited to one
-synthetic request per scene; it is not a full-theater benchmark. The existing
-[Cerebras benchmark](benchmarks/README.md) remains unchanged.
+no retries and pricing semantics. The initial integration smoke test below used one synthetic request per scene.
+The subsequent [full paired benchmark](benchmarks/README.md) now measures all
+seven scenes through the production comparison UI.
 
 Official contract checked **2026-09-17**:
 [TypeSafe API](https://docs.typesafe.ai/api) and
@@ -93,7 +93,7 @@ The home answer set the requested kitchen to bright and also returned hall=brigh
 instead of unchanged. The hall was already bright, so the simulated state did not
 change there; this remains a judgment mismatch, not a perfect-match claim.
 Routing and driving were single decisions, not complete navigation/control runs.
-The existing full Cerebras benchmark has not been replaced with these smoke results.
+These smoke results remain separate from the later full paired benchmark.
 
 ## Side-by-side theater
 

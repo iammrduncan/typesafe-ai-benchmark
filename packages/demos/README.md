@@ -42,7 +42,7 @@ Set `CEREBRAS_API_KEY` in the root `.env`. The key stays server-side. Fixture mo
 uses synthetic outputs and zero billed cost. GPT OSS can use internal reasoning
 tokens; these count in usage but reasoning is never returned. Both models use
 strict upstream schema mode and the same local output gate, without repair or
-fallback. [Current Qwen theater benchmark](../../docs/benchmarks/README.md).
+fallback. [Current Qwen / Jev paired benchmark](../../docs/benchmarks/README.md).
 
 Each bulk run shuffles all 100 inputs before dispatch. Exports retain the actual
 request order and input/output pairing. Guardrails and approvals each contain 20

@@ -69,31 +69,25 @@ threshold adjustment makes an inference call or modifies request timing.
 
 ## Current benchmark evidence — 2026-09-17 UTC
 
-The [full-theater benchmark](benchmarks/README.md) replaces the prior piecemeal
-latency/cost tables. All seven scenes ran against Cerebras Qwen through the
-production browser UI. The initial slideshow stopped on HTTP 429 during Scoring;
-complete Scoring and Home runs were captured separately. All 523 dispatches remain
-in the report: 521 validated, one rate limit and one driving deadline cancellation.
+The [paired benchmark](benchmarks/README.md) measures all seven scenes with Qwen
+and native Jev running together in the production comparison UI. Qwen validated
+475/476 dispatches and Jev 479/480. Each canceled one outstanding driving request
+at the ten-second deadline; neither encountered an HTTP failure or rate limit.
+Both lanes started within 0–2 ms for every scene. Static request inputs and order
+were verified equal; stateful worlds evolved independently from matching setup.
 
-Raw exports, environment metadata, a reproducible offline summary and every
-fixture mismatch are published in `docs/benchmarks/theater/`. These curated
-benchmark artifacts are intentionally tracked; incidental recordings/screenshots
-remain in ignored `.artifacts/demo-verification/`. README media is allowlisted
-under `docs/media/`.
+Raw exports, environment/source hashes, an offline summarizer and every fixture
+mismatch are tracked in `docs/benchmarks/comparison/`. The prior Qwen-only report
+is retained as [historical evidence](benchmarks/qwen-theater.md).
 
-Home replay confirmed all 24 inputs reflected the prior device state, with 20
-apply and four clarify outputs. Guardrails and approvals matched all 100 fixtures
-each; Tickets matched 75/100 complete outputs and Scoring 93/100. Routing reached
-its destination in eight hops. The WebGPU driving engine ran ten seconds, covered
-92.45 metres and had two collisions. All output-shape checks passed for accepted
-responses; judgment mistakes remain visible. No real devices or commands ran.
+Fixture agreement: Tickets 75/100 each; Guardrails 100/100 each; Approvals 100/100
+Qwen and 95/100 Jev; Scoring 93/100 Qwen and 100/100 Jev; Home 24/24 Qwen and 15/24
+Jev. Both navigated to the target in eight hops and had one driving collision.
+These figures distinguish accepted output shape from judgment quality. Every
+home input was checked against the previous applied state. No real devices or
+commands were operated.
 
-The browser's rate-limit stop preserved in-flight results and prevented automatic
-advance. The complete scoring follow-up used one stream; the report does not
-claim that it completed at concurrency five or that the whole slideshow ran
-without interruption. See the benchmark for timings and known-cost accounting.
-
-Final publication checks: `npm run check` passed with 38 API tests and 18 demo
-tests, strict type checks, lint and both production builds. The offline report
-recomputation and independent counts, percentiles, cost and export-hash checks
-passed. Only the two Cerebras models remain in the application.
+The README GIF, compressed MP4 and still were replaced with the user's September
+17 side-by-side recording. Recording timings are illustrative and separate from
+the exported benchmark measurements. Incidental verification artifacts remain
+ignored under `.artifacts/demo-verification/`.

@@ -2,6 +2,8 @@
 
 **LLM-native structured output vs. TypeSafe Jev: latency, cost, and judgment quality.**
 
+[Hackers in the Loop](https://hackersintheloop.org/)
+
 How does a fast general-purpose LLM compare with a purpose-built judgment model
 on the same application tasks? This benchmark runs **Qwen 3.8 27B on Cerebras**
 and **TypeSafe Jev** side by side across seven synthetic workloads. It records

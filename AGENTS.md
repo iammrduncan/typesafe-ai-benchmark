@@ -2,15 +2,16 @@
 
 ## Mission
 
-Build a very fast **TypeScript proxy that exposes the TypeSafe.ai API over existing
-LLMs**. Clients should receive validated, typed judgments through a documented
-compatibility surface. Minimize added latency and upstream work without weakening
-correctness. This is an independent implementation; matching the API does not imply
-matching TypeSafe's models, calibration, or performance.
+Maintain **typesafe-ai-benchmark**, a reproducible comparison of LLM-native
+structured output from Qwen 3.8 on Cerebras and TypeSafe's native Jev judgment API.
+Compare latency, cost and judgment outcomes on shared synthetic application tasks.
+Preserve raw results, failures and mapping differences; distinguish type validity,
+quality and performance. The standalone compatibility proxy supports the benchmark
+and remains documented, but API imitation is not the project's primary goal.
 
-TypeScript is decided. The runtime, package manager, HTTP framework, schema library,
-and first provider are not yet selected. Inspect the repository before choosing or
-adding tooling. Do not turn examples in documentation into assumed dependencies.
+The repository uses TypeScript, Node 22, npm workspaces, Fastify, Next.js and Zod.
+Inspect existing code before adding tooling. Preserve validation and cancellation
+on both provider paths. Do not claim universal speed rankings from this benchmark.
 
 ## Read first
 

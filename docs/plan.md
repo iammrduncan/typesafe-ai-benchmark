@@ -1,12 +1,16 @@
-# Implementation plan and delivery record
+# Benchmark architecture and delivery record
 
-Updated 2026-09-16. The first implementation, examples, offline checks and Qwen
-live runs are complete. The original repository contained conventions, reference
-material and an SDK snippet; no runtime implementation had to be preserved.
+Updated 2026-09-17. **typesafe-ai-benchmark** compares LLM-native structured output
+from Qwen 3.8 on Cerebras with native TypeSafe Jev. The current product is a paired
+seven-workload runner with independent timing, costs, quality checks and raw exports.
+[Published results](benchmarks/README.md) and [native mapping](jev.md) define the
+measured paths. Qwen uses one compact schema response; Jev batches native questions.
 
-The user's final scope requires **both** TypeSafe's `/v1/systemone` shape and
-OpenAI's `/v1/chat/completions` with ordinary messages and response_format. This
-supersedes the earlier plan for OpenAI alone. TypeScript and direct Cerebras remain the selected implementation. The canonical supported contract is [api_reference.txt](context/api_reference.txt).
+The project began as a TypeSafe-compatible proxy before Jev access was available.
+That API remains supporting infrastructure and a separate compatibility experiment.
+The decisions below describe its implementation; its per-question strategy is not
+the LLM-native path measured by the paired benchmark. The supported API contract is
+[api_reference.txt](context/api_reference.txt).
 
 ## Decisions
 
@@ -45,7 +49,7 @@ project scaffold. Versions and transitive dependencies are locked in package-loc
    adapter now sends exactly one. Preserve wrong judgments in the live artifact.
 7. **Benchmark.** Reproducible local/stub and live HTTP runners report latency,
    provider decode time, throughput, tokens, estimated cost, warmup, failures,
-   environment and safe per-call metadata. Current evidence: all seven theater scenes, retaining rate-limit interruption and manual completion runs.
+   environment and safe per-call metadata. Current evidence: all seven paired Qwen/Jev scenes; the earlier Qwen-only interruption is preserved as historical evidence.
 
 ## Data path and containment
 
@@ -83,8 +87,8 @@ fallback, database, tool execution or streaming in this slice.
 
 [Benchmark results](benchmarks/README.md) now report the production theater's
 seven scenes, browser request latencies, token usage, costs and fixture comparisons.
-The first slideshow stopped at a rate limit; complete scoring and home runs were
-recorded separately. This is not a saturation test or a provider decode measurement.
+The current paired run completed every scene with no rate limits; each driving
+lane canceled its final in-flight request at the deadline. This is not a saturation test or a provider decode measurement.
 
 Deferred: live GPT OSS validation; large-contract live stress tests (255 options
 are offline-tested); calibrated labeled quality evaluation; multi-question and
@@ -111,8 +115,9 @@ See [the extension guide](../packages/demos/README.md) and
 
 ## Completed theater revision
 
-The seven-scene, single-screen Next.js theater is implemented with up to five concurrent
-independent requests per bulk scene and sequential stateful controls. The WebGPU
+The seven-scene Next.js theater defaults to side-by-side Qwen and Jev, with two
+concurrent requests per model in bulk scenes and sequential stateful controls.
+Single-model mode retains up to five concurrent requests and automatic advancement. The WebGPU
 scene runs for ten monotonic seconds; request results remain atomically validated.
 See [the requirement audit](theater-verification.md) for current implementation
 decisions, test coverage, live results and known model mistakes. Home automation

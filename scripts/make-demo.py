@@ -33,7 +33,7 @@ COMMAND = ['node', '--env-file=.env', '--import', 'tsx', 'packages/api/examples/
 def draw_frame(lines):
     image = Image.new('RGB', (WIDTH, HEIGHT), BG)
     d = ImageDraw.Draw(image)
-    d.text((36, 24), 'typesafe-ai-mimic', font=TITLE, fill=TEXT)
+    d.text((36, 24), 'typesafe-ai-benchmark', font=TITLE, fill=TEXT)
     d.text((36, 72), 'LIVE REQUEST CAPTURE / actual timing / 1x speed', font=SMALL, fill=GREEN)
     d.rounded_rectangle((24, 112, WIDTH - 24, 560), radius=18, fill=PANEL)
     d.text((44, 132), '$ ' + ' '.join(COMMAND), font=SMALL, fill=MUTED)

@@ -1,7 +1,10 @@
-# Showcase research and implementation
+# Benchmark workload research and origins
 
-Checked 2026-09-16. The aim is to let people test whether an ordinary LLM plus a
-strict contract is sufficient for their application, not assert unmeasured Jev parity.
+Research checked 2026-09-16. These notes explain the origins of the synthetic
+workloads in **typesafe-ai-benchmark**. The implemented comparison now measures
+LLM-native Qwen 3.8 on Cerebras alongside native Jev; see the current
+[results and methodology](benchmarks/README.md). Earlier design options below
+remain historical context, not additional benchmark evidence.
 
 ## What the public materials show
 

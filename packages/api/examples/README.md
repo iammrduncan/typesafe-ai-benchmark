@@ -1,4 +1,8 @@
-# Examples and benchmarks
+# Supporting API examples and microbenchmarks
+
+The primary [Qwen / Jev benchmark](../../../docs/benchmarks/README.md) runs through
+the browser comparison UI. The commands below exercise the supporting Cerebras
+API separately; their results do not constitute a paired Jev comparison.
 
 From the repository root, run `npm run examples` for seven deterministic synthetic examples against a local
 HTTP stub. Run `npm run examples:live` to use Cerebras with the key in `.env`.

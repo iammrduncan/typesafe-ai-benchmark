@@ -1,6 +1,10 @@
 # @decision/api
 
-The standalone Fastify proxy and shared typed-decision implementation.
+The Cerebras structured-output and validation layer supporting
+[typesafe-ai-benchmark](../../README.md). The paired runner uses one joint-schema
+Qwen response per application decision; the Jev lane calls TypeSafe directly from
+the demos workspace. This package also retains a standalone Fastify compatibility
+API and separate CLI experiments. [Standalone setup](../../docs/standalone-api.md).
 
 - `src/`: both public routes, contract/codec validation, Cerebras transport,
   scheduling, auth and safe metrics.

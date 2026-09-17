@@ -1,4 +1,8 @@
-# Working examples
+# Supporting API examples
+
+For the project’s main LLM-native Qwen / Jev comparison, see the
+[benchmark runner](../packages/demos/README.md) and [results](benchmarks/README.md).
+The examples below document the separate compatibility API.
 
 Checked 2026-09-16. Seven synthetic workflows run through the actual proxy and
 shared validation gate. The two public interfaces are demonstrated directly;

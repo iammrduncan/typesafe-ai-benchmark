@@ -2,10 +2,11 @@
 
 ## Product contract
 
-The implementation language is **TypeScript**. Build a low-overhead gateway from the
-TypeSafe request contract to existing LLM providers, with validated responses on
-the way back. Start with one provider and a working request path. Add infrastructure
-only when a concrete requirement or measurement justifies it.
+Use **TypeScript** to benchmark LLM-native structured judgments from Qwen 3.8 on
+Cerebras against native TypeSafe Jev. Keep matched workloads, reproducible evidence
+and transparent latency/cost/quality accounting central. The supporting API retains
+its documented compatibility surface. Minimize harness overhead without weakening
+validation, failure handling or measurement integrity.
 
 The following upstream reference was checked on **2026-09-16**. It is a starting
 contract, not a claim that this scaffold already implements it.

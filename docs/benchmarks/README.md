@@ -1,4 +1,9 @@
-# Qwen / Jev side-by-side benchmark
+# TypeSafe AI Benchmark: LLM-native Qwen vs. Jev
+
+This report compares provider-native LLM structured output from **Qwen 3.8 27B on
+Cerebras** with **TypeSafe Jev’s native judgment API**. Qwen is the chosen fast LLM
+baseline; this is not an exhaustive ranking of LLMs or inference hosts. The
+supporting proxy’s per-question TypeSafe compatibility path is outside this comparison.
 
 Measured **2026-09-17 UTC** through the actual production browser comparison.
 One paired run of each of the seven scenes, with no warmups, retries, rate-limit

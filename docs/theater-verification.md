@@ -1,10 +1,11 @@
 # Decision Theater verification
 
-Goal: a single-screen slideshow of seven demos, with inputs left, application
-center and validated results right. 100 tickets, structured navigation, 10 real
-seconds of third-person WebGPU driving, 100 guardrail decisions, 100 command
-approvals, 100 golden-reference evaluations, and 24 home automation commands. Bulk concurrency is selectable
-from one to five; stateful control loops stay sequential.
+The primary runner compares LLM-native Qwen 3.8 on Cerebras with native Jev across
+seven workloads: Tickets, Routing, Driving, Guardrails, Approvals, Scoring and Home.
+The default side-by-side view launches both models on matching workload order,
+with two concurrent requests per model for bulk scenes and sequential stateful
+loops. Each lane records independent outcomes and timings. Single-model mode
+retains the original input/visual/output layout and up to five concurrent calls.
 
 ## Implementation decisions
 

@@ -1,190 +1,46 @@
-# typesafe-ai-mimic
+# typesafe-ai-benchmark
 
-Built while waiting for TypeSafe access. For fun and giggles. Because we can.
+**LLM-native structured output vs. TypeSafe Jev: latency, cost, and judgment quality.**
 
-This is an independent TypeScript experiment that puts a strict judgment API in
-front of an existing LLM. It borrows [TypeSafe.ai](https://typesafe.ai)'s
-Choice / Score / Noul interface and adds an OpenAI-compatible endpoint so existing
-LLM clients can use it too. The proxy uses Cerebras; the theater also offers a
-direct connection to real TypeSafe Jev for comparison.
+How does a fast general-purpose LLM compare with a purpose-built judgment model
+on the same application tasks? This benchmark runs **Qwen 3.8 27B on Cerebras**
+and **TypeSafe Jev** side by side across seven synthetic workloads. It records
+validated outputs, mistakes, request latency, token usage and estimated cost.
 
-[![Decision Theater demo recording](docs/media/theater-demo.gif)](docs/media/theater-demo.mp4)
+[![Qwen on Cerebras vs. Jev — side-by-side benchmark demo](docs/media/theater-demo.gif)](docs/media/theater-demo.mp4)
 
-[Watch or download the full demo (MP4)](docs/media/theater-demo.mp4) ·
-[Static screenshot](docs/media/theater.png)
+[Watch or download the demo (MP4)](docs/media/theater-demo.mp4) ·
+[Static screenshot](docs/media/theater.png) ·
+[Raw results and methodology](docs/benchmarks/README.md)
 
-The animated preview shows the full recording at a reduced frame rate. The MP4
-preserves the full 98-second side-by-side demo at 720p / 30 fps and is ready to upload to X.
+The GIF and 98-second MP4 illustrate the comparison UI. Published measurements
+come from the separately captured browser exports linked below.
 
-The Dracula-themed player includes 100-ticket categorization, structured-map
-navigation, ten seconds of WebGPU city driving, 100 guardrail checks, 100 agent
-command approvals, 100 golden-reference evaluations, and home automation. Each model has its own results panel. Inspect a decision to see its input and output.
-Single-model mode also supports the whole slideshow.
-The default side-by-side view runs **Qwen 3.8 27B / Cerebras** and **Jev / TypeSafe**
-together when you press **Run demo**, using the same shuffled input order. Configure
-`CEREBRAS_API_KEY` and `JEV_KEY` in `.env`. Each side has its own timing, cost,
-results and export. **Single model** retains the original model selector. Jev uses native batched questions and keeps its probabilities in exports.
-The header identifies the provider; Jev cost uses $0.04/M input and free output.
-[Jev setup, question mapping and limitations](docs/jev.md).
-[Verification, measurements and limitations](docs/theater-verification.md).
+## What we compare
 
-## Monorepo and interactive demos
+| Approach | Model / provider | One application decision |
+| --- | --- | --- |
+| **LLM-native structured output** | Qwen 3.8 27B / Cerebras | One schema-constrained LLM response, validated and decoded locally |
+| **Native judgment API** | Jev / TypeSafe | One request batching native Choice/Noul questions, mapped to the same application output |
 
-```text
-packages/api/     Fastify proxy, strict contracts, tests, CLI examples and benchmarks
-packages/demos/   Next.js + React app, demo catalog, pages and server-side handlers
-docs/             API specification, research and verification summaries
-```
+“LLM-native” means using the LLM provider’s structured-output capability. The
+benchmark compiles application fields into compact numeric slots, asks Qwen for
+one constrained response, then reconstructs the typed result. It does not ask
+Qwen to emulate Jev probabilities in this comparison. Jev's native probabilities
+remain available in the exports. Both paths validate outputs before applying
+simulated actions. [Exact mapping and differences](docs/jev.md).
 
-One npm workspace lockfile; no separate installs inside packages.
+## Why Qwen on Cerebras?
 
-```sh
-npm ci
-npm run dev       # Next.js at http://127.0.0.1:3001; fixtures, no paid inference
-npm run dev:live  # real inference; uses provider keys in root .env
-npm run dev:api   # standalone API at http://127.0.0.1:3000
-```
+We chose Qwen 3.8 on Cerebras as our fast LLM baseline, to compare Jev with a
+low-latency structured-output approach. Qwen runs with reasoning disabled and a
+compact output schema. This is a baseline choice, not a measured ranking of every
+LLM or hosting provider.
 
-**Decision Theater** supports single-stream or 2–5 concurrent bulk requests, automatic
-scene advancement, real timing/token/cost metrics, and complete session exports.
-The driving scene needs WebGPU on localhost or HTTPS. The current secure tailnet
-URL is `https://josephs-macbook-pro.taila9c138.ts.net/`. The seven-scene reel includes
-home automation, clickable request inspection and adjustable scoring validity.
-The retired labs have been removed.
-
-[How to add a demo](packages/demos/README.md#add-a-scene) ·
-[Research and source notes](docs/showcase-research.md) ·
-[API workspace](packages/api/README.md)
-
-## What it does
-
-- `POST /v1/systemone`: TypeSafe-style Choice, Score and Noul questions.
-- `POST /v1/chat/completions`: normal OpenAI messages and strict `response_format.json_schema`.
-
-Send context plus a contract. Cerebras produces compact numeric values and selection
-indices; the proxy validates them and reconstructs declared labels and structure
-locally. Invalid output fails closed. Provider reasoning and arbitrary generated
-prose never become answer content. Unconstrained strings, streaming and tools are
-rejected. See the [supported API](docs/context/api_reference.txt).
-
-## Why Cerebras?
-
-The theater uses Cerebras for its Qwen judgment calls. In the latest paired run,
-Qwen returned **475/476 validated outputs** with **215 ms median successful browser
-request latency**, compared with **176 ms for Jev**. Each canceled one outstanding
-driving request at the ten-second deadline. See the [benchmark](docs/benchmarks/README.md)
-for costs, concurrency, judgment outcomes and limitations.
-
-## The inefficient part
-
-This is an inefficient stand-in for TypeSafe's purpose-built judgment service:
-we ask a general-purpose LLM to *write* probabilities. Each TypeSafe question gets
-its own call, repeating state and rubric input. A thirteen-question request means
-thirteen provider calls, with only four running concurrently. That increases input
-tokens, cost and queueing. The generic OpenAI schema path uses one call, but its
-fields do not have the same isolation guarantee.
-
-The theater now measures native Jev beside the joint-schema Qwen path. This does
-not benchmark the standalone proxy’s per-question TypeSafe-compatible path. Matching an API does not reproduce its underlying
-model efficiency, calibration or quality. Our entropy-based confidence is a local
-approximation. The point is an accessible experiment while on the waitlist, not a
-claim of TypeSafe parity.
-
-## Quick start
-
-Requires **Node 22** and **npm 10**. From this checkout, try all seven examples
-without credentials or paid inference:
-
-```sh
-npm ci
-npm run examples
-```
-
-To start the real Cerebras-backed server:
-
-```sh
-# Create the file only if it does not already exist.
-test -f .env || cp .env.example .env
-```
-
-Edit `.env`: set `CEREBRAS_API_KEY` and a **different** `PROXY_API_KEY` of at least
-16 characters. Keep both private; clients use only the proxy key. Then:
-
-```sh
-npm run build
-npm start
-```
-
-The server loads `.env` and listens at `http://127.0.0.1:3000`. In another terminal,
-set `PROXY_API_KEY` to the same proxy key from `.env`, then make a judgment:
-
-```sh
-export PROXY_API_KEY='your-proxy-key-from-.env'
-curl --fail-with-body http://127.0.0.1:3000/v1/systemone \
-  -H "Authorization: Bearer $PROXY_API_KEY" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "jev-latest",
-    "state": "Please refund the duplicate charge.",
-    "questions": {
-      "refund": {"type": "noul", "instructions": "Is money requested back?"}
-    }
-  }'
-```
-
-The response contains `answers.refund.noul` in `[0,1]`, actual token usage, and
-`model: "qwen-3.8-27b"`. `jev-latest` is only a compatibility alias; it does not
-select Jev. The probability is model-estimated, not guaranteed to be correct.
-
-For an ordinary OpenAI-compatible request:
-
-```sh
-curl --fail-with-body http://127.0.0.1:3000/v1/chat/completions \
-  -H "Authorization: Bearer $PROXY_API_KEY" \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "model": "qwen-3.8-27b",
-    "messages": [{"role": "user", "content": "Please refund the duplicate charge."}],
-    "response_format": {
-      "type": "json_schema",
-      "json_schema": {
-        "name": "routing", "strict": true,
-        "schema": {
-          "type": "object",
-          "properties": {"department": {"type": "string", "enum": ["billing", "technical", "other"]}},
-          "required": ["department"], "additionalProperties": false
-        }
-      }
-    }
-  }'
-```
-
-`choices[0].message.content` contains JSON such as `{"department":"billing"}`.
-For an OpenAI SDK client, set `baseURL: 'http://127.0.0.1:3000/v1'`, use the proxy
-key, and supply a supported strict schema. Set `maxRetries: 0` when measuring
-calls and cost. [Complete SDK example](docs/examples.md#ordinary-openai-sdk-call).
-
-## Want a different inference backend?
-
-Ask your coding agent to make the swap. This currently requires code changes;
-changing an environment variable alone will not configure another provider.
-Copy this prompt and replace the bracketed provider name:
-
-> Replace Cerebras with [provider and model] as the inference backend. Read
-> AGENTS.md and CONVENTIONS.md first. Trace packages/api/src/cerebras.ts and its callers in
-> packages/api/src/evaluate.ts, then inspect model validation in packages/api/src/contracts.ts, startup
-> configuration in packages/api/src/index.ts, and pricing in packages/api/src/metrics.ts. Verify the target
-> provider's official structured-output support, tuple schemas, reasoning controls,
-> usage fields and cancellation behavior. Adapt the compact numeric schema if
-> necessary while preserving local type/range/length/distribution checks and both
-> public HTTP contracts. Keep keys server-side, sanitize errors, and retain bounded
-> bodies, queueing, deadlines, cancellation and zero automatic retries. Reject
-> unsupported behavior explicitly. Update model IDs, .env.example, examples,
-> benchmark preflight/pricing/timing extraction and documentation. Do not invent
-> provider timings or infer parity from its OpenAI-compatible URL. Run the HTTP
-> stub tests, npm run check and offline examples. Keep live verification separate,
-> synthetic and within an explicit spend bound. Keep the change small; a provider
-> plugin framework is unnecessary.
+[Cerebras' model catalog](https://inference-docs.cerebras.ai/models/overview), checked
+2026-09-17, lists Qwen at approximately 1,850 output tokens/s and GPT OSS at about
+3,000. Those advertised token rates are different from the end-to-end decision
+latency measured here; they do not establish which model is fastest on these tasks.
 
 ## Benchmark outcomes
 
@@ -225,34 +81,80 @@ one synthetic development-machine run, not calibrated quality or general model p
 [Per-scene results, raw exports, method and limitations](docs/benchmarks/README.md).
 Recompute the table data offline with `node --import tsx scripts/summarize-comparison.mjs`.
 
+## Run the comparison
+
+Requires **Node 22** and **npm 10**. Install once from the repository root:
+
 ```sh
-npm run benchmark      # local HTTP + upstream stub
-npm run benchmark:live # real Cerebras; reads .env and overwrites the live report
-npm run examples:live  # seven synthetic workflows against real Cerebras
+npm ci
+test -f .env || cp .env.example .env
 ```
 
-Live commands enforce bounded calls and a conservative $1 list-price ceiling per
-run. Examples use an ephemeral proxy credential and need only the Cerebras key.
-No real devices or external functions are operated.
+Set `CEREBRAS_API_KEY` and `JEV_KEY` in `.env`, then start the production UI:
 
-## Correct types are not correct judgments
+```sh
+npm run build
+npm run start:demos:live
+```
 
-Seven examples returned validated live outputs, but the smart-home scope and two
-injection-screening judgments were wrong. Those results are preserved in the
-[live report](docs/live-results.json). A type gate blocks arbitrary generated text;
-it cannot prove semantic prompt-injection resistance or stop information from
-being encoded in allowed numbers/selections. See [security boundaries](docs/security.md).
-The paired theater benchmark reports both providers and preserves every fixture mismatch.
+Open `http://127.0.0.1:3001`. Select a scene and press **Run demo** to launch both
+models together. **Stop both** cancels both lanes. Each panel has its own timing,
+cost, result inspection, contract viewer and export. Export both before changing
+scenes. Live runs incur charges; use a bounded budget and retain partial/failed runs.
+The published session used a $2 estimated budget; the interactive UI has no
+cumulative spending cutoff.
 
-## Development and documentation
+For a local UI preview without inference, use `npm run dev`. Fixture mode uses
+synthetic answers/tokens and is labeled explicitly; its timings are not model
+performance. **Single model** retains individual runs and the seven-scene slideshow.
 
-`npm run dev` starts the Next.js fixture app; `npm run dev:api` watches the API.
-`npm run check` runs strict source/example type
-checks, ESLint, both workspace test suites and both production builds.
-Normal tests never use `.env` credentials.
+| Scene | Workload |
+| --- | --- |
+| Tickets | 100 customer tickets; team, priority, action and escalation |
+| Routing | Model-selected moves through a street graph |
+| Driving | Ten seconds of WebGPU steering and throttle decisions |
+| Guardrails | 100 allow/block checks |
+| Approvals | 100 proposed agent commands; none executed |
+| Scoring | 100 candidate answers against golden references |
+| Home | 24 commands operating simulated lights, blinds and temperature |
 
-- [Implementation plan and decisions](docs/plan.md)
-- [Example source mapping and SDK usage](docs/examples.md)
-- [Runner and benchmark commands](packages/api/examples/README.md)
-- [HTTP API reference](docs/context/api_reference.txt)
+Static scenes share shuffled inputs and use two concurrent requests per model.
+Stateful scenes start from matching setup and follow each model's own decisions.
+Driving needs WebGPU on localhost or HTTPS. No real devices or external commands
+are operated. [Runner guide](packages/demos/README.md).
+
+## Interpreting the benchmark
+
+Valid output shape, judgment quality and performance are separate measurements.
+Fixture agreement is exact agreement with local expected outputs, not evidence of
+calibration or general security guarantees. Repeated synthetic cases are not an
+independent population sample. Native Jev questions and joint Qwen generation have
+different inference semantics, especially rubric scoring. Stateful trajectories
+may diverge. No retries, repaired answers or fallback outputs are hidden in results.
+
+This is an independent benchmark, not a TypeSafe implementation or parity claim.
+Raw exports preserve mistakes and native Jev probabilities. See the
+[methodology](docs/benchmarks/README.md), [mapping](docs/jev.md), and
+[security boundaries](docs/security.md).
+
+## Repository and development
+
+```text
+packages/demos/   Side-by-side benchmark UI, workloads and native Jev adapter
+packages/api/     Cerebras structured-output adapter, validation and supporting API
+scripts/          Offline benchmark summarizers and media tooling
+docs/benchmarks/  Raw exports, source hashes, metrics and quality comparisons
+```
+
+`npm run check` runs strict type checks, lint, offline tests and both builds.
+Normal tests never use provider credentials. The standalone API and CLI examples
+remain available for compatibility experiments; their separate benchmark commands
+do not regenerate the paired theater report.
+
+- [Benchmark results, methodology and reproduction](docs/benchmarks/README.md)
+- [Add or inspect a workload](packages/demos/README.md#add-a-scene)
+- [Architecture and delivery record](docs/plan.md)
+- [Supporting API setup and examples](docs/standalone-api.md)
+- [API workspace](packages/api/README.md) and [HTTP contract](docs/context/api_reference.txt)
+- [CLI examples and separate microbenchmarks](packages/api/examples/README.md)
 - [Engineering conventions](CONVENTIONS.md)

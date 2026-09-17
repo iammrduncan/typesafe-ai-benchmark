@@ -1,11 +1,10 @@
-# Decision Theater · Next.js demos
+# TypeSafe AI Benchmark · comparison runner
 
-The home page is a Dracula-themed, viewport-sized player. Inputs stay on the left, the
-application is in the center, and validated typed returns arrive on the right.
-The charcoal surfaces, purple controls, cyan keys, yellow strings and pink literals
-follow the [Dracula palette](https://draculatheme.com/contribute). The map, verdict
-grids and WebGPU city use matching colors. There is no document scrolling; the
-input/output feeds scroll inside their panels.
+The interactive runner compares **LLM-native structured output from Qwen 3.8 27B
+on Cerebras** with **native TypeSafe Jev**. Each workload launches both providers
+from one Run demo action and reports separate latency, cost and validated results.
+The default home page presents both model panels; Single model retains the original
+input/visual/output layout. [Published results and method](../../docs/benchmarks/README.md).
 
 | Scene | Workload | Result |
 | --- | --- | --- |

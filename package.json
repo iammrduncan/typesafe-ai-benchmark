@@ -1,8 +1,8 @@
 {
-  "name": "typesafe-ai-mimic",
+  "name": "typesafe-ai-benchmark",
   "version": "0.0.0",
   "private": true,
-  "description": "A strictly validated TypeSafe and OpenAI-compatible judgment proxy backed by Cerebras.",
+  "description": "Benchmark LLM-native structured output from Qwen 3.8 on Cerebras against TypeSafe Jev.",
   "license": "MIT",
   "type": "module",
   "engines": {

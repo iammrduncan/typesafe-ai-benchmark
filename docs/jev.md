@@ -1,6 +1,7 @@
-# Real Jev in Decision Theater
+# Native Jev lane: mapping and benchmark semantics
 
-The theater can call TypeSafe's real `jev-latest` model directly. Set `JEV_KEY`
+The Jev lane in **typesafe-ai-benchmark** calls TypeSafe's real `jev-latest` model
+directly, alongside LLM-native structured output from Qwen 3.8 on Cerebras. Set `JEV_KEY`
 in the root `.env` (or `TYPESAFE_API_KEY`, which takes precedence), run
 `npm run build && npm run start:demos:live`, then use the side-by-side view or choose **Single model → Jev · TypeSafe**.
 The key stays on the server. Models without credentials are disabled. Jev-only

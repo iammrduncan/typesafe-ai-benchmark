@@ -1,6 +1,12 @@
 # Output containment and prompt injection
 
-Both endpoints share the same numeric inference boundary. Cerebras receives a
+The benchmark has two validated inference paths: LLM-native structured output
+through the Cerebras adapter, and native Jev answers through the
+[Jev adapter](jev.md). Native Jev probabilities are validated and retained; they
+are not computed by the compatibility proxy described below. Both paths can
+return structurally valid but incorrect judgments.
+
+The supporting proxy's two HTTP endpoints share the same numeric inference boundary. Cerebras receives a
 strict closed schema for `{"p":[...]}`. Every element is a finite, bounded number
 or a bounded integer index. Its raw response is never forwarded to a client.
 The server validates the envelope, finish reason, output shape, count, types and

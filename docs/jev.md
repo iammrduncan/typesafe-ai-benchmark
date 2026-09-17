@@ -2,9 +2,10 @@
 
 The theater can call TypeSafe's real `jev-latest` model directly. Set `JEV_KEY`
 in the root `.env` (or `TYPESAFE_API_KEY`, which takes precedence), run
-`npm run build && npm run start:demos:live`, then select **Jev · TypeSafe**.
+`npm run build && npm run start:demos:live`, then use the side-by-side view or choose **Single model → Jev · TypeSafe**.
 The key stays on the server. Models without credentials are disabled. Jev-only
-configuration works; when both providers are configured, Qwen remains the default.
+configuration works in Single model mode; its default is Qwen when both providers
+are configured.
 Restart an existing production server after rebuilding and refresh its browser tab.
 
 This is a theater integration, not a change to the standalone compatibility API.
@@ -93,3 +94,23 @@ instead of unchanged. The hall was already bright, so the simulated state did no
 change there; this remains a judgment mismatch, not a perfect-match claim.
 Routing and driving were single decisions, not complete navigation/control runs.
 The existing full Cerebras benchmark has not been replaced with these smoke results.
+
+## Side-by-side theater
+
+The default theater view pairs **Qwen 3.8 27B / Cerebras** with **Jev / TypeSafe**.
+Select a scene and press **Run demo** to start both; **Stop both** cancels both.
+Each panel has its own results, wall time, throughput, estimated cost and export.
+Both credentials are required in live mode. Single-model mode remains available.
+
+The same shuffled workload is supplied to both players. Static scenes use two
+requests per model at a time (four total, below the shared five-request limit).
+Home, routing and driving remain sequential within each model, starting from
+matching state and following that model's own decisions. Consequently their later
+contexts can differ; driving request counts depend on inference speed. Navigation
+destination and displayed scoring threshold are shared between panels.
+
+The comparison reuses two existing player lifecycles rather than introducing a
+paired backend endpoint. This preserves cancellation, validation and per-provider
+exports without an extra server orchestration layer. Both runs are launched from
+one click, without a response barrier that would slow the faster model; this is
+concurrent observation, not a claim of identical network dispatch timestamps.

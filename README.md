@@ -20,8 +20,10 @@ The Dracula-themed, single-screen player includes 100-ticket categorization, str
 navigation, ten seconds of WebGPU city driving, 100 guardrail checks, 100 agent
 command approvals, 100 golden-reference evaluations, and home automation. Inputs stay on the left;
 validated outputs stay on the right. Play one scene or run the whole slideshow.
-Select Qwen 27B or GPT OSS 120B on Cerebras, or **Jev · TypeSafe** with `JEV_KEY`
-in `.env`. Jev uses native batched questions and keeps its probabilities in exports.
+The default side-by-side view runs **Qwen 3.8 27B / Cerebras** and **Jev / TypeSafe**
+together when you press **Run demo**, using the same shuffled input order. Configure
+`CEREBRAS_API_KEY` and `JEV_KEY` in `.env`. Each side has its own timing, cost,
+results and export. **Single model** retains the original model selector. Jev uses native batched questions and keeps its probabilities in exports.
 The header identifies the provider; Jev cost uses $0.04/M input and free output.
 [Jev setup, question mapping and limitations](docs/jev.md).
 [Verification, measurements and limitations](docs/theater-verification.md).

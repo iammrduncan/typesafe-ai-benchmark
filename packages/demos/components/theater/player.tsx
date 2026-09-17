@@ -10,7 +10,12 @@ import { demoModel, models } from '../../lib/models';
 import { ContractDialog } from './contract-dialog';
 import { contractSnapshot, type ContractSnapshot } from '../../lib/theater/contract-view';
 import './theater.css';
+import { ComparisonPlayer } from './comparison-player';
 export function DemoPlayer(){
+  const [compare,setCompare]=useState(true);
+  return compare ? <ComparisonPlayer onSingle={()=>setCompare(false)}/> : <><button className="comparison-return" onClick={()=>setCompare(true)}>← Side-by-side comparison</button><SinglePlayer/></>;
+}
+function SinglePlayer(){
   const shell=useRef<HTMLDivElement>(null);
   useEffect(()=>{
     // Browser chrome/fullscreen transitions can leave viewport units larger than

@@ -13,20 +13,20 @@ const resultSchema=z.object({model:demoModel,decision:z.record(z.string(),z.unkn
 export type DecisionResult=z.infer<typeof resultSchema>;
 export type PlayerEvent={id:number;scene:SceneId;item:WorkItem;input:unknown;status:'pending'|'validated'|'failed'|'canceled';sentAt:string;elapsedMs?:number;settledMs?:number;data?:DecisionResult;error?:string;httpStatus?:number};
 export type SceneRun={scene:SceneId;model:DemoModel;elapsedMs:number;concurrency:number;events:PlayerEvent[];car?:DrivingEngine['state']};
-export function usePlayer(){
+export function usePlayer(fixedModel?: DemoModel){
   const [config,setConfig]=useState<z.infer<typeof configSchema>>();const [connectionError,setConnectionError]=useState('');
   const [home,setHome]=useState({...initialHome});
   const [scoreThreshold,setScoreThreshold]=useState(90);
-  const [model,setModel]=useState<DemoModel>(defaultModel);
-  const [scene,setScene]=useState<SceneId>('dispatch');const currentScene=useRef<SceneId>('dispatch');const [events,setEvents]=useState<PlayerEvent[]>([]);const [running,setRunning]=useState(false);const [playlist,setPlaylist]=useState(false);const [concurrency,setConcurrency]=useState(5);const [elapsedMs,setElapsedMs]=useState(0);const [note,setNote]=useState('Ready when you are.');
+  const [model,setModel]=useState<DemoModel>(fixedModel ?? defaultModel);
+  const [scene,setScene]=useState<SceneId>('dispatch');const currentScene=useRef<SceneId>('dispatch');const [events,setEvents]=useState<PlayerEvent[]>([]);const [running,setRunning]=useState(false);const [playlist,setPlaylist]=useState(false);const [concurrency,setConcurrency]=useState(fixedModel ? 2 : 5);const [elapsedMs,setElapsedMs]=useState(0);const [note,setNote]=useState('Ready when you are.');
   const [navigation,setNavigation]=useState<NavigationState>({position:20,target:4,visited:[20]});const navSetup=useRef({start:20,target:4});
   const engine=useRef(new DrivingEngine()).current;const [car,setCar]=useState({...engine.state});
   const [gpu,setGpu]=useState('loading');const gpuRef=useRef('loading');const onGpu=useCallback((status:string)=>{gpuRef.current=status;setGpu(status);},[]);
   const control=useRef<AbortController|null>(null);const started=useRef(0);const nextId=useRef(1);const archive=useRef<SceneRun[]>([]);
-  useEffect(()=>{const abort=new AbortController();void fetch('/api/config',{signal:abort.signal}).then(async r=>{if(!r.ok)throw new Error('Unavailable');const next=configSchema.parse(await r.json());setConfig(next);setModel(next.model);}).catch(()=>{if(!abort.signal.aborted)setConnectionError('Connection unavailable. Reload after checking the demo server.');});return()=>{abort.abort();control.current?.abort();engine.stop(performance.now());};},[engine]);
+  useEffect(()=>{const abort=new AbortController();void fetch('/api/config',{signal:abort.signal}).then(async r=>{if(!r.ok)throw new Error('Unavailable');const next=configSchema.parse(await r.json());setConfig(next);setModel(fixedModel ?? next.model);}).catch(()=>{if(!abort.signal.aborted)setConnectionError('Connection unavailable. Reload after checking the demo server.');});return()=>{abort.abort();control.current?.abort();engine.stop(performance.now());};},[engine,fixedModel]);
   useEffect(()=>{if(!running)return;const timer=setInterval(()=>{setElapsedMs(performance.now()-started.current);if(scene==='drive')setCar({...engine.tick(performance.now())});},60);return()=>clearInterval(timer);},[running,scene,engine]);
-  async function play(all:boolean){
-    if(!config||control.current)return;
+  async function play(all:boolean, sharedWorkload?: readonly WorkItem[]){
+    if(!config||!config.availableModels.includes(model)||control.current)return;
     const connection=config;const abort=new AbortController();control.current=abort;archive.current=[];setPlaylist(all);
     const sequence=all?scenes.map(s=>s.id):[scene];
     try{for(const id of sequence){if(abort.signal.aborted)break;
@@ -41,7 +41,7 @@ export function usePlayer(){
       };
       if(id==='home'){
         let state={...initialHome};setHome(state);setNote('One command at a time. Each request sees the latest home state.');
-        for(const item of shuffledWorkload('home')){
+        for(const item of sharedWorkload ?? shuffledWorkload('home')){
           if(abort.signal.aborted)break;
           const command=homeInput.parse(item.context);
           const result=await request({...item,context:{...command,state:{...state}}});
@@ -62,7 +62,7 @@ export function usePlayer(){
         if(gpuRef.current!=='ready'){setNote(gpuRef.current==='loading'?'WebGPU did not become ready.':gpuRef.current);}
         else if(!abort.signal.aborted){started.current=performance.now();engine.start(started.current);setNote('Live steering and throttle from validated decisions.');setCar({...engine.state});const driveAbort=new AbortController();const signal=AbortSignal.any([abort.signal,driveAbort.signal]);const timer=setTimeout(()=>driveAbort.abort(),10000);
           let step=0;try{while(!signal.aborted&&engine.tick(performance.now()).elapsedMs<10000){if(rateLimited){await new Promise(resolve=>setTimeout(resolve,50));continue;}const state={...engine.state};const result=await request({id:`DRV-${++step}`,title:`Drive tick ${step}`,context:state},signal);if(result.status==='validated'&&!signal.aborted)engine.apply(driveDecision.parse(result.data?.decision),performance.now());}}finally{clearTimeout(timer);engine.stop(performance.now());setCar({...engine.state});}setNote(`${(engine.state.elapsedMs/1000).toFixed(2)} seconds · ${engine.state.distance.toFixed(0)} m · ${engine.state.collisions} collisions`);}
-      }else{const workload=shuffledWorkload(id);let next=0;setNote('Shuffled requests arriving at inference speed.');const worker=async()=>{while(!abort.signal.aborted&&!rateLimited&&next<workload.length){const item=workload[next++];if(item)await request(item);}};await Promise.all(Array.from({length:concurrency},worker));setNote(`${rows.filter(e=>e.status==='validated').length} validated / ${rows.length} dispatched · shuffled`);}
+      }else{const workload=sharedWorkload ?? shuffledWorkload(id);let next=0;setNote('Shuffled requests arriving at inference speed.');const worker=async()=>{while(!abort.signal.aborted&&!rateLimited&&next<workload.length){const item=workload[next++];if(item)await request(item);}};await Promise.all(Array.from({length:concurrency},worker));setNote(`${rows.filter(e=>e.status==='validated').length} validated / ${rows.length} dispatched · shuffled`);}
       const duration=performance.now()-started.current;setElapsedMs(duration);setRunning(false);archive.current.push({scene:id,model,elapsedMs:duration,concurrency:id==='navigate'||id==='drive'||id==='home'?1:concurrency,events:rows,...(id==='drive'?{car:{...engine.state}}:{})});
       if(rateLimited){setNote(`Rate limit reached after ${rows.length} requests. Run stopped; retry later. No automatic retries.`);break;}
       if(all&&!abort.signal.aborted&&id!==sequence.at(-1)){setNote(n=>`${n} · next scene…`);await new Promise(resolve=>setTimeout(resolve,1200));}

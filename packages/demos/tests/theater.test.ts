@@ -111,3 +111,25 @@ test('secure tailnet origin is exact and foreign origins remain forbidden',()=>{
   assert.equal(localRequest(make(`http://${host}`),true,'100.127.125.114',host),false);
   assert.equal(localRequest(make('https://evil.test'),true,'100.127.125.114',host),false);
 });
+
+test('paired Qwen and Jev workloads share inputs and fit the shared admission limit',async()=>{
+  const runtime=await createDemoRuntime({stub:true});
+  const workload=shuffledWorkload('dispatch',()=>0.5).slice(0,8);
+  const order:Record<string,string[]>={};
+  try{
+    await Promise.all((['qwen-3.8-27b','jev-latest'] as const).map(async model=>{
+      let next=0; const seen:string[]=[]; order[model]=seen;
+      await Promise.all(Array.from({length:2},async()=>{
+        while(next<workload.length){
+          const item=workload[next++]; assert.ok(item); seen.push(item.id);
+          const result=await runtime.run({id:'dispatch',model,text:JSON.stringify(item.context)},new AbortController().signal);
+          assert.equal(result.status,200,JSON.stringify(result.body));
+          assert.equal(z.object({model:demoModel}).parse(result.body).model,model);
+        }
+      }));
+    }));
+    assert.deepEqual(order['qwen-3.8-27b'],workload.map(item=>item.id));
+    assert.deepEqual(order['jev-latest'],order['qwen-3.8-27b']);
+    assert.equal(runtime.config().calls,16);
+  }finally{await runtime.close();}
+});

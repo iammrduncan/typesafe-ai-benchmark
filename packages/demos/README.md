@@ -17,7 +17,12 @@ input/output feeds scroll inside their panels.
 | LLM judge | 100 input/golden/candidate triples | Accuracy matrix with adjustable validity threshold; green tiles and the count share the same strict comparison |
 | Home automation | 24 shuffled household requests, each with current device state | A live floor plan: four room lights, blinds and an 18–26°C thermostat; ambiguous/unsupported commands request clarification |
 
-**Play scene** runs the selected scene. **Play all 7** starts at tickets, advances
+**Run demo** in the default side-by-side view starts Qwen 3.8 27B and Jev together
+on the same shuffled inputs, with two concurrent requests per side (one for
+stateful scenes). **Stop both** cancels both runs. Each panel retains its own
+metrics, results, contract and export. Both credentials are required in live mode.
+
+Choose **Single model** for the original controls. **Play scene** runs the selected scene. **Play all 7** starts at tickets, advances
 through all seven, and stops at the end. **Stop** cancels dispatch and outstanding
 requests. Independent items allow 1–5 concurrent requests. Navigation, driving and home automation
 are sequential because each decision needs the latest world state.

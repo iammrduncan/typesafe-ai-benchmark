@@ -404,3 +404,33 @@ to{transform:scale(1);opacity:1}
  .contract-footer{padding:12px 16px}.contract-footer span{font-size:9px}.theater-shell .contract-footer button{font-size:10px;flex-shrink:0}
  .contract-dialog .contract-json{font-size:11px}
 }
+
+/* Comparison reuses each player's lifecycle and visuals, with one shared start. */
+.theater-shell.comparison-shell{position:relative;min-height:100dvh;height:auto;overflow:visible;display:flex;flex-direction:column;padding:0 26px}
+.comparison-shell>.theater-top{min-height:58px}
+.comparison-shell>.scene-tabs{min-height:44px;overflow-x:auto}
+.comparison-shell>.theater-title{min-height:112px}
+.comparison-shell .theater-title p{font:10px var(--mono);color:var(--t-purple)}
+.comparison-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;flex:1}
+.comparison-lane{min-width:0;border:1px solid var(--t-line);border-radius:10px;overflow:hidden;align-self:start}
+.comparison-provider{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px;border-bottom:1px solid var(--t-line)}
+.comparison-provider span{font:9px var(--mono);letter-spacing:1px;color:var(--t-cyan)}
+.comparison-provider h2{font-size:22px;margin:6px 0}
+.comparison-provider small{font:9px var(--mono);color:var(--t-muted)}
+.comparison-provider>div:last-child{display:flex;flex-direction:column;gap:10px}
+.comparison-provider button{background:none;border:0;color:var(--t-purple);font:10px var(--mono);text-align:right;white-space:nowrap}
+.comparison-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));padding:14px 16px;border-bottom:1px solid var(--t-line);gap:8px}
+.comparison-metrics span{display:block;font:8px var(--mono);color:var(--t-cyan);margin-bottom:7px}
+.comparison-metrics strong{font:18px var(--mono)}
+.comparison-visual{height:clamp(330px,45vh,540px);min-height:0;overflow:auto}
+.comparison-lane .scene-status{min-height:44px;height:auto;padding:10px 14px;line-height:1.5}
+.comparison-inspection{border-top:1px solid var(--t-line);font:10px var(--mono)}
+.comparison-inspection summary{padding:13px;cursor:pointer;color:var(--t-cyan)}
+.comparison-json{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--t-line)}
+.comparison-json>div{min-width:0;background:var(--t-paper)}
+.comparison-json h3{font:9px var(--mono);padding:0 13px}
+.comparison-json .theater-code{height:220px;border:0;font-size:10px}
+.comparison-warning{color:var(--t-yellow);font:12px var(--mono)}
+.comparison-shell>.theater-footer{min-height:42px;gap:16px}
+.comparison-return{position:fixed;bottom:5px;left:26px;z-index:5;font:10px var(--mono);color:#bd93f9;background:#282a36;border:1px solid #6272a4;padding:5px 10px}
+@media(max-width:760px){.theater-shell.comparison-shell{padding:0 12px}.comparison-grid{grid-template-columns:1fr}.comparison-shell>.theater-title{flex-wrap:wrap;padding:18px 0;gap:18px}.comparison-shell>.theater-footer{flex-wrap:wrap;padding:14px 0}.comparison-provider h2{font-size:20px}}

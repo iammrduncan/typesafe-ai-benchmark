@@ -2,7 +2,7 @@
 import { applyHome, homeInput, rooms } from '../../lib/theater/home';
 import type { PlayerState } from './use-player';
 
-export function HomeScene({ player: p, selectedId, onSelect }: { player: PlayerState; selectedId: number | undefined; onSelect: (id: number) => void }) {
+export function HomeScene({ player: p, selectedId, onSelect, inspectionId = 'theater-input theater-output' }: { player: PlayerState; selectedId: number | undefined; onSelect: (id: number) => void; inspectionId?: string }) {
   const selected = p.events.find(event => event.id === selectedId);
   const before = selected ? homeInput.parse(selected.input).state : p.home;
   const state = selected?.data ? applyHome(before, selected.data.decision) : before;
@@ -15,7 +15,7 @@ export function HomeScene({ player: p, selectedId, onSelect }: { player: PlayerS
     <div className="home-floor">
       {rooms.map(room => {
         const event = lastChange(room);
-        return <button type="button" key={room} className={`home-room ${state[room]}`} disabled={!event} aria-label={`Inspect last ${room} light command`} onClick={() => { if (event) onSelect(event.id); }} aria-controls="theater-input theater-output">
+        return <button type="button" key={room} className={`home-room ${state[room]}`} disabled={!event} aria-label={`Inspect last ${room} light command`} onClick={() => { if (event) onSelect(event.id); }} aria-controls={inspectionId}>
           <span className="room-title">{room === 'living' ? 'LIVING ROOM' : room.toUpperCase()}</span>
           <svg viewBox="0 0 180 90" aria-hidden="true">
             <g className="room-furniture" fill="none" stroke="currentColor" strokeWidth="2">
@@ -28,12 +28,12 @@ export function HomeScene({ player: p, selectedId, onSelect }: { player: PlayerS
     </div>
     <div className="home-devices">{(['blinds', 'temperature'] as const).map(device => {
       const event = lastChange(device);
-      return <button type="button" key={device} onClick={() => { if (event) onSelect(event.id); }} disabled={!event} aria-label={`Inspect last ${device} command`} aria-controls="theater-input theater-output"><span>{device === 'blinds' ? '▤ BLINDS' : '◉ THERMOSTAT'}</span><strong>{device === 'blinds' ? state.blinds.toUpperCase() : `${state.temperature}°C`}</strong></button>;
+      return <button type="button" key={device} onClick={() => { if (event) onSelect(event.id); }} disabled={!event} aria-label={`Inspect last ${device} command`} aria-controls={inspectionId}><span>{device === 'blinds' ? '▤ BLINDS' : '◉ THERMOSTAT'}</span><strong>{device === 'blinds' ? state.blinds.toUpperCase() : `${state.temperature}°C`}</strong></button>;
     })}</div>
     <div className="home-timeline" aria-label="Home command history">{Array.from({ length: 24 }, (_, i) => {
       const event = p.events[i];
       const action = event?.data?.decision.action;
-      return <button type="button" key={i} disabled={!event} className={action === 'apply' ? 'applied' : action === 'clarify' ? 'clarify' : event?.status ?? 'waiting'} onClick={() => { if (event) onSelect(event.id); }} aria-pressed={Boolean(event && event.id === selectedId)} aria-controls="theater-input theater-output" aria-label={event ? `Inspect ${event.item.id}: ${event.item.title}. ${action ?? event.status}` : `Home command ${i + 1} not dispatched`} title={event?.item.title ?? 'Not dispatched'}>{action === 'apply' ? '✓' : action === 'clarify' ? '?' : event?.status === 'failed' ? '!' : i + 1}</button>;
+      return <button type="button" key={i} disabled={!event} className={action === 'apply' ? 'applied' : action === 'clarify' ? 'clarify' : event?.status ?? 'waiting'} onClick={() => { if (event) onSelect(event.id); }} aria-pressed={Boolean(event && event.id === selectedId)} aria-controls={inspectionId} aria-label={event ? `Inspect ${event.item.id}: ${event.item.title}. ${action ?? event.status}` : `Home command ${i + 1} not dispatched`} title={event?.item.title ?? 'Not dispatched'}>{action === 'apply' ? '✓' : action === 'clarify' ? '?' : event?.status === 'failed' ? '!' : i + 1}</button>;
     })}</div>
     <div className="home-legend"><span>✓ applied</span><span>? clarify / no change</span><span>Click a device or command to inspect</span></div>
   </div>;

@@ -11,11 +11,14 @@ import { parseJson, record } from '@decision/api/json';
 import { demoInput, prepare, applyDecision } from './contracts';
 import { fixtureDispatch } from './traffic';
 import { theaterId, theaterFixtureAllowed, theaterFixture } from './theater/contracts';
-import { demoModel, defaultModel } from './models';
+import { demoModel, defaultModel, models } from './models';
+import { jevPlan, requestJev, fixtureJev } from './jev';
 
-export async function createDemoRuntime(options: { apiKey?: string; stub?: boolean } = {}) {
+export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: string; jevEndpoint?: string; stub?: boolean } = {}) {
   const stub = options.stub ?? false;
-  if (!stub && !options.apiKey) throw new Error('CEREBRAS_API_KEY required');
+  if (!stub && !options.apiKey && !options.jevApiKey) throw new Error('CEREBRAS_API_KEY or JEV_KEY required');
+  const availableModels = demoModel.options.filter(model => stub || (model === 'jev-latest' ? options.jevApiKey : options.apiKey));
+  const initialModel = options.apiKey || stub ? defaultModel : 'jev-latest';
   const token = randomBytes(24).toString('hex'), proxyKey = randomBytes(24).toString('hex');
   let calls = 0, active = 0;
   const upstream = stub ? Fastify({ logger: false }) : undefined;
@@ -41,25 +44,40 @@ export async function createDemoRuntime(options: { apiKey?: string; stub?: boole
     });
     providerEndpoint = `${await upstream.listen({ host: '127.0.0.1', port: 0 })}/v1/chat/completions`;
   }
-  const proxy = await createServer({ apiKey: options.apiKey ?? 'synthetic-showcase-key', proxyKey, concurrency: 5, ...(providerEndpoint ? { providerEndpoint } : {}) });
-  const proxyOrigin = await proxy.listen({ host: '127.0.0.1', port: 0 });
-  const config = () => ({ token, mode: stub ? 'fixture' as const : 'live' as const, model: defaultModel, calls });
+  const proxy = stub || options.apiKey ? await createServer({ apiKey: options.apiKey ?? 'synthetic-showcase-key', proxyKey, concurrency: 5, ...(providerEndpoint ? { providerEndpoint } : {}) }) : undefined;
+  const proxyOrigin = await proxy?.listen({ host: '127.0.0.1', port: 0 });
+  const config = () => ({ token, mode: stub ? 'fixture' as const : 'live' as const, model: initialModel, availableModels, calls });
   const run = async (body: unknown, signal: AbortSignal) => {
     const reply = { code(status: number) { return { send(body: unknown) { return { status, body }; } }; } };
     const parsed = demoInput.safeParse(body);
     if (!parsed.success) return reply.code(400).send({ error: 'Invalid demo input.' });
     const input = parsed.data;
-    const model = input.model ?? defaultModel;
+    const model = input.model ?? initialModel;
+    if (!availableModels.includes(model)) return reply.code(503).send({ error: 'Selected provider is not configured. No action applied.' });
+    if (signal.aborted) return reply.code(504).send({ error: 'Request canceled. No action applied.' });
     if (stub && !(theaterId(input.id) ? theaterFixtureAllowed(input.id, input.text) : fixtureDispatch(input.text))) return reply.code(400).send({ error: 'Fixture mode uses fixed inputs. Start live mode to edit.' });
-    const planned = prepare({ ...input, model });
+    const nativePlan = model === 'jev-latest' ? jevPlan(input) : undefined;
+    const inferenceModel = model === 'jev-latest' ? defaultModel : model;
+    const planned = prepare({ ...input, model: inferenceModel });
     const data = chatRequest.parse(planned.payload);
     const plan = { messages: data.messages, jobs: [compileSchema(data.response_format.json_schema.schema).job] };
     // Validate every provider request before dispatch, without imposing a lifetime quota.
-    for (const job of plan.jobs) providerBody(model, plan.messages, job);
+    if (!nativePlan || stub) for (const job of plan.jobs) providerBody(inferenceModel, plan.messages, job);
     if (active >= 5) return reply.code(429).send({ error: 'Too many requests in flight. Wait for an active request to finish.' });
     active++; calls += plan.jobs.length;
     const started = performance.now();
     try {
+      if (nativePlan && !stub) {
+        if (!options.jevApiKey) throw new Fault('provider_unavailable', 502);
+        const { result, native } = await requestJev(nativePlan, options.jevApiKey,
+          AbortSignal.any([signal, AbortSignal.timeout(16_000)]), options.jevEndpoint);
+        signal.throwIfAborted();
+        return { status: 200, body: { mode: 'live', model, providerModel: native.model, result,
+          decision: applyDecision(input, result), elapsedMs: performance.now() - started, usage: native.usage,
+          estimatedCostUsd: native.usage.input_tokens * models['jev-latest'].input / 1e6, calls, providerCalls: 1, questionCount: Object.keys(nativePlan.payload.questions).length,
+          contract: nativePlan.payload, route: '/v1/systemone', nativeAnswers: native.answers,
+          mappingVersion: 'jev-scenes-v1', booleanThreshold: { comparison: 'strictly greater than', value: 0.5 } } };
+      }
       const response = await fetch(`${proxyOrigin}${planned.route}`, { method: 'POST', signal: AbortSignal.any([signal, AbortSignal.timeout(16_000)]),
         headers: { authorization: `Bearer ${proxyKey}`, 'content-type': 'application/json' }, body: JSON.stringify(planned.payload) });
       const data = parseJson(await response.text());
@@ -71,16 +89,28 @@ export async function createDemoRuntime(options: { apiKey?: string; stub?: boole
       }
       if (!record(data)) throw new Error('Invalid result');
       const actualModel = demoModel.parse(data.model);
-      if (actualModel !== model) throw new Error('Unexpected response model');
+      if (actualModel !== inferenceModel) throw new Error('Unexpected response model');
       const tokens = z.object({ prompt_tokens: z.number(), completion_tokens: z.number() }).parse(data.usage);
       const usage = { input_tokens: tokens.prompt_tokens, output_tokens: tokens.completion_tokens };
       const envelope = z.object({ choices: z.array(z.object({ message: z.object({ content: z.string() }) })).length(1) }).parse(data);
       const result = parseJson(envelope.choices[0]?.message.content ?? '');
+      if (nativePlan) {
+        if (!record(result)) throw new Error('Invalid fixture');
+        const { result: decoded, native } = fixtureJev(nativePlan, result);
+        return { status: 200, body: { mode: 'fixture', model, providerModel: native.model, result: decoded,
+          decision: applyDecision(input, decoded), elapsedMs, usage: native.usage, estimatedCostUsd: 0,
+          calls, providerCalls: 1, questionCount: Object.keys(nativePlan.payload.questions).length,
+          contract: nativePlan.payload, route: '/v1/systemone', nativeAnswers: native.answers,
+          mappingVersion: 'jev-scenes-v1', booleanThreshold: { comparison: 'strictly greater than', value: 0.5 } } };
+      }
       return { status: 200, body: { mode: stub ? 'fixture' : 'live', model: actualModel, result, decision: applyDecision(input, result), elapsedMs, usage,
-        estimatedCostUsd: stub ? 0 : estimatedCost(actualModel, usage), calls, providerCalls: plan.jobs.length,
+        estimatedCostUsd: stub ? 0 : estimatedCost(inferenceModel, usage), calls, providerCalls: plan.jobs.length,
         contract: planned.payload, route: planned.route } };
-    } catch { return reply.code(502).send({ error: 'Request failed. No action applied.', calls }); }
+    } catch (error) {
+      const fault = signal.aborted ? new Fault('deadline_exceeded', 504) : error instanceof Fault ? error : new Fault('invalid_provider_output', 502);
+      return reply.code(fault.status).send({ error: `${fault.message} No action applied.`, code: fault.code, elapsedMs: performance.now() - started, calls });
+    }
     finally { active--; }
   };
-  return { config, run, async close() { await proxy.close(); await upstream?.close(); } };
+  return { config, run, async close() { await proxy?.close(); await upstream?.close(); } };
 }

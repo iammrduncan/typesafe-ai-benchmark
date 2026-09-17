@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { prepare } from '../contracts';
 import type { DemoModel } from '../models';
 import { scenes, type SceneId } from './data';
+import { jevPlan } from '../jev';
 
 export type ContractSnapshot = {
   title: string;
@@ -20,9 +21,18 @@ export function contractSnapshot(input: {
     source: input.recorded !== undefined ? 'Recorded request' : input.requestId ? 'Reconstructed request' : 'Scene preview',
     ...(input.requestId ? { requestId: input.requestId } : {}),
     // Build previews with the same function as inference. Do not maintain a second contract.
-    request: input.recorded ?? prepare({ id: input.scene, model: input.model, text: JSON.stringify(input.context) }).payload,
+    request: input.recorded ?? (input.model === 'jev-latest'
+      ? jevPlan({ id: input.scene, model: input.model, text: JSON.stringify(input.context) }).payload
+      : prepare({ id: input.scene, model: input.model, text: JSON.stringify(input.context) }).payload),
     ...(input.scene === 'judge' && input.scoreThreshold !== undefined ? { scoreThreshold: input.scoreThreshold } : {}),
   };
+}
+
+export function readNativeContract(request: unknown) {
+  const parsed = z.object({ model: z.literal('jev-latest'), state: z.unknown(),
+    questions: z.record(z.string(), z.object({ type: z.enum(['choice', 'noul']), instructions: z.string(),
+      criteria: z.record(z.string(), z.string().nullable()).optional() })) }).safeParse(request);
+  return parsed.success ? parsed.data : undefined;
 }
 
 // This is a read-only projection for display, not an inference validation boundary.

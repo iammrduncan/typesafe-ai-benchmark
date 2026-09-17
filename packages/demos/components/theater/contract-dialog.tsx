@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { readContract, type ContractSnapshot } from '../../lib/theater/contract-view';
+import { readContract, readNativeContract, type ContractSnapshot } from '../../lib/theater/contract-view';
 import { JsonCode } from './json-code';
 
 export function ContractDialog({ snapshot, onClose }: { snapshot: ContractSnapshot; onClose: () => void }) {
@@ -8,6 +8,7 @@ export function ContractDialog({ snapshot, onClose }: { snapshot: ContractSnapsh
   const [view, setView] = useState<'rules' | 'schema' | 'request'>('rules');
   const [copied, setCopied] = useState('Copy request JSON');
   const contract = readContract(snapshot.request);
+  const native = readNativeContract(snapshot.request);
   useEffect(() => {
     const element = dialog.current;
     element?.showModal();
@@ -27,14 +28,14 @@ export function ContractDialog({ snapshot, onClose }: { snapshot: ContractSnapsh
     <header className="contract-heading"><div><span>THE CONTRACT</span><h2 id="contract-title">{snapshot.title}</h2>
       <p id="contract-source">{snapshot.source}{snapshot.requestId ? ` · ${snapshot.requestId}` : ''} · snapshot at open</p></div>
       <button type="button" className="contract-close" aria-label="Close contract" onClick={onClose}>Close ×</button></header>
-    <div className="contract-meta"><code>POST /v1/chat/completions</code><span>{contract?.model}</span><b>{contract?.format.json_schema.strict ? 'STRICT OUTPUT' : 'OUTPUT CONTRACT'}</b></div>
+    <div className="contract-meta"><code>POST {native ? '/v1/systemone' : '/v1/chat/completions'}</code><span>{native?.model ?? contract?.model}</span><b>{native ? 'NATIVE QUESTIONS' : contract?.format.json_schema.strict ? 'STRICT OUTPUT' : 'OUTPUT CONTRACT'}</b></div>
     <nav className="contract-tabs" aria-label="Contract views">{([
-      ['rules', 'Choices & rules'], ['schema', 'JSON schema'], ['request', 'Full request'],
+      ['rules', 'Choices & rules'], ['schema', native ? 'Native questions' : 'JSON schema'], ['request', 'Full request'],
     ] as const).map(([id, label]) => <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>{label}</button>)}</nav>
     <div className="contract-body">
       {view === 'rules' ? <>
         <p className="contract-intro">These descriptions guide the model’s judgment. Required fields, allowed choices and numeric limits are enforced before a result is returned.</p>
-        {contract ? <div className="contract-fields">{contract.fields.map(field => <article key={field.name} className="contract-field">
+        {native ? <div className="contract-fields">{Object.entries(native.questions).map(([id, question]) => <article key={id} className="contract-field"><header><h3>{id}</h3><span>{question.type.toUpperCase()}</span></header><p>{question.instructions}</p>{question.criteria && <div className="contract-values">{Object.keys(question.criteria).map(value => <code key={value}>{value}</code>)}</div>}</article>)}</div> : contract ? <div className="contract-fields">{contract.fields.map(field => <article key={field.name} className="contract-field">
           <header><h3>{field.name}</h3><span>{field.enum ? 'CHOICE' : field.type === 'boolean' ? 'BOOLEAN' : field.type === 'integer' ? 'INTEGER' : field.type.toUpperCase()}{field.required ? ' · REQUIRED' : ''}</span></header>
           <div className="contract-values">{field.enum ? field.enum.map((value, index) => <code key={index}>{typeof value === 'string' ? value : JSON.stringify(value)}</code>)
             : field.type === 'boolean' ? <><code>false</code><code>true</code></>
@@ -42,8 +43,8 @@ export function ContractDialog({ snapshot, onClose }: { snapshot: ContractSnapsh
           {field.description && <p>{field.description}</p>}
         </article>)}</div> : <p>The readable summary is unavailable. Open Full request to inspect the recorded JSON.</p>}
         {snapshot.scoreThreshold !== undefined && <aside className="contract-display-policy"><b>Scene display rule · accuracy &gt; {snapshot.scoreThreshold}%</b><p>The green cells and valid-answer count use this adjustable threshold. The model’s <code>valid</code> field separately checks complete content and formatting compliance.</p></aside>}
-        <p className="contract-enforcement">Extra fields are rejected. The proxy translates choices into numeric slots, validates the returned numbers, and reconstructs this typed result. Type validity does not guarantee a correct judgment.</p>
-      </> : <pre className="theater-code contract-json"><JsonCode value={view === 'schema' ? contract?.format ?? snapshot.request : snapshot.request}/></pre>}
+        <p className="contract-enforcement">{native ? 'One native TypeSafe request evaluates all questions. Choice labels map directly; Noul values above 0.5 become true. Scoring sums rubric points for criteria above 0.5. Native probabilities remain in exports.' : 'Extra fields are rejected. The proxy translates choices into numeric slots, validates the returned numbers, and reconstructs this typed result.'} Type validity does not guarantee a correct judgment.</p>
+      </> : <pre className="theater-code contract-json"><JsonCode value={view === 'schema' ? native?.questions ?? contract?.format ?? snapshot.request : snapshot.request}/></pre>}
     </div>
     <footer className="contract-footer"><span>Read only. Opening this view makes no model call.</span><button type="button" onClick={() => { void copyRequest(); }} aria-live="polite">{copied}</button></footer>
   </dialog>;

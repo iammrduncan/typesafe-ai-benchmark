@@ -13,13 +13,14 @@ export function shuffledWorkload(scene: SceneId, random: () => number = Math.ran
   return items;
 }
 
-type MeasuredRequest = { data?: { usage: { input_tokens: number; output_tokens: number }; estimatedCostUsd: number } };
+type MeasuredRequest = { data?: { usage: { input_tokens: number; output_tokens: number }; estimatedCostUsd: number | null } };
 export function requestTotals(events: readonly MeasuredRequest[]) {
-  let input = 0, output = 0, cost = 0, measuredRequests = 0;
+  let input = 0, output = 0, cost = 0, measuredRequests = 0, pricedRequests = 0;
   for (const { data } of events) {
     if (!data) continue;
     input += data.usage.input_tokens; output += data.usage.output_tokens;
-    cost += data.estimatedCostUsd; measuredRequests++;
+    measuredRequests++;
+    if (data.estimatedCostUsd !== null) { cost += data.estimatedCostUsd; pricedRequests++; }
   }
-  return { input, output, cost, measuredRequests, averageCostUsd: measuredRequests ? cost / measuredRequests : null };
+  return { input, output, cost, measuredRequests, pricedRequests, unpricedRequests: measuredRequests - pricedRequests, averageCostUsd: pricedRequests ? cost / pricedRequests : null };
 }

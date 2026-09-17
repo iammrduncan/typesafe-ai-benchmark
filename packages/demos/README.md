@@ -27,6 +27,12 @@ model's input/output prices appear beneath the dropdown. Selection is locked
 during a run; changing it clears prior results. Requests, exports and estimates
 use the chosen model. Qwen is the default; unknown model names fail before inference.
 
+**Jev · TypeSafe** uses the real native TypeSafe API when `JEV_KEY` (or
+`TYPESAFE_API_KEY`) is configured. Unconfigured models are disabled. Jev-only
+setups default to Jev. [Native mapping, response validation and cost limits](../../docs/jev.md).
+Exports include native probabilities, actual model revision and mapping version;
+the contract dialog shows the TypeSafe request. Jev pricing is $0.04/M input with free output, supplied by the account owner.
+
 Set `CEREBRAS_API_KEY` in the root `.env`. The key stays server-side. Fixture mode
 uses synthetic outputs and zero billed cost. GPT OSS can use internal reasoning
 tokens; these count in usage but reasoning is never returned. Both models use
@@ -105,8 +111,11 @@ not a multi-user public deployment and has no account system.
 
 The Next server imports `@decision/api` through a `server-only` runtime and calls
 its actual authenticated HTTP routes over loopback. Provider and proxy credentials
-never enter browser bundles. All output passes the same numeric codec/type gate.
-Every scene uses one joint OpenAI-schema judgment per request. The standalone
+never enter browser bundles. Cerebras output passes the numeric codec/type gate;
+native Jev answers pass their own probability/answer checks and the same final
+scene validators.
+Each Cerebras scene uses one joint OpenAI-schema judgment per request; Jev sends
+one native request containing all questions for the same scene item. The standalone
 API continues to support both OpenAI and TypeSafe endpoints.
 
 There is no cumulative spending or call cutoff. Runtime concurrency is bounded to
@@ -120,7 +129,8 @@ throughput uses successful results divided by that wall time, not provider decod
 time. Costs use reported usage and dated list prices; failed/canceled calls may
 have unknown billed usage. The 1.2-second slideshow presentation transition is
 outside each scene measurement. It does not change request timings.
-**AVG / REQUEST** divides the known estimated cost by requests with reported usage;
+**AVG / REQUEST** divides the known estimated cost by requests with reported usage
+and configured pricing;
 it excludes pending/failed/canceled calls with unknown usage. Exported totals include
 that denominator. Before any measured result, the average is unavailable, not zero.
 

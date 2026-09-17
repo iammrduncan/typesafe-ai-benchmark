@@ -39,8 +39,9 @@ test('demo sessions continue past the former 80-call cutoff; aborted requests re
   const second = await createDemoRuntime({ stub: true });
   try {
     const response = await second.run({ id: 'home', text: JSON.stringify(homeWorkItem(0).context) }, AbortSignal.abort());
-    assert.equal(response.status, 502);
-    assert.equal(z.object({ error: z.string() }).parse(response.body).error, 'Request failed. No action applied.');
+    assert.equal(response.status, 504);
+    assert.equal(z.object({ error: z.string() }).parse(response.body).error, 'Request canceled. No action applied.');
+    assert.equal(second.config().calls, 0);
   } finally { await second.close(); }
 });
 

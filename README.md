@@ -5,7 +5,8 @@ Built while waiting for TypeSafe access. For fun and giggles. Because we can.
 This is an independent TypeScript experiment that puts a strict judgment API in
 front of an existing LLM. It borrows [TypeSafe.ai](https://typesafe.ai)'s
 Choice / Score / Noul interface and adds an OpenAI-compatible endpoint so existing
-LLM clients can use it too. It does not run TypeSafe's models.
+LLM clients can use it too. The proxy uses Cerebras; the theater also offers a
+direct connection to real TypeSafe Jev for comparison.
 
 [![Decision Theater demo recording](docs/media/theater-demo.gif)](docs/media/theater-demo.mp4)
 
@@ -19,8 +20,10 @@ The Dracula-themed, single-screen player includes 100-ticket categorization, str
 navigation, ten seconds of WebGPU city driving, 100 guardrail checks, 100 agent
 command approvals, 100 golden-reference evaluations, and home automation. Inputs stay on the left;
 validated outputs stay on the right. Play one scene or run the whole slideshow.
-Select Qwen 27B or GPT OSS 120B on Cerebras. The header shows input/output
-pricing; requests, exports and cost estimates follow the selected model.
+Select Qwen 27B or GPT OSS 120B on Cerebras, or **Jev · TypeSafe** with `JEV_KEY`
+in `.env`. Jev uses native batched questions and keeps its probabilities in exports.
+The header identifies the provider; Jev cost uses $0.04/M input and free output.
+[Jev setup, question mapping and limitations](docs/jev.md).
 [Verification, measurements and limitations](docs/theater-verification.md).
 
 ## Monorepo and interactive demos

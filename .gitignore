@@ -7,3 +7,6 @@ coverage/
 *.tsbuildinfo
 *.log
 .DS_Store
+
+.next/
+.playwright-mcp/

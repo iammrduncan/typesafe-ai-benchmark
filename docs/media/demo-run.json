@@ -1,0 +1,57 @@
+{
+  "mode": "live",
+  "generatedAt": "2026-09-16T23:51:32.657495+00:00",
+  "command": [
+    "node",
+    "--env-file=.env",
+    "--import",
+    "tsx",
+    "examples/record-request.ts"
+  ],
+  "captureDurationSeconds": 0.7914067502133548,
+  "videoDurationSeconds": 0.82,
+  "fps": 50,
+  "timingPolicy": "1x monotonic stdout arrival timing; 20ms frame quantization; no added holds or speed changes.",
+  "events": [
+    {
+      "seconds": 0.3016098332591355,
+      "line": "LIVE Cerebras / qwen-3.8-27b / one request / no retries"
+    },
+    {
+      "seconds": 0.3016472910530865,
+      "line": "POST /v1/chat/completions"
+    },
+    {
+      "seconds": 0.3016472910530865,
+      "line": "Context: Please return the duplicate payment."
+    },
+    {
+      "seconds": 0.30165258329361677,
+      "line": "Contract: department enum + refund probability [0,1]"
+    },
+    {
+      "seconds": 0.30165787506848574,
+      "line": "Request sent..."
+    },
+    {
+      "seconds": 0.757710041012615,
+      "line": "HTTP 200 / 455.85 ms measured HTTP round trip"
+    },
+    {
+      "seconds": 0.7578131663613021,
+      "line": "Validated assistant content:"
+    },
+    {
+      "seconds": 0.7578131663613021,
+      "line": "{\"department\":\"billing\",\"refund_requested\":1}"
+    },
+    {
+      "seconds": 0.7578241252340376,
+      "line": "Tokens: 404 input / 10 output"
+    },
+    {
+      "seconds": 0.7579377079382539,
+      "line": "Estimated cost: $0.00041486 (dated list prices)"
+    }
+  ]
+}

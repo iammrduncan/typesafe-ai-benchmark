@@ -1,7 +1,9 @@
-readme - note the why "waitlist ofr typesafe", "for fun and giggles", "because we can"
-readme - note the ineffeciency of this compared to typesafe ai
-readme - add how to - quick start
-readme - add why cerebras (fast)
-readme - add how to - ask an agent to replace cerebras with the backend of your choice
-make video demo, to gif, store in repo and put on readme.
-readme - benchmarks outcome
+[x] readme - note the why: "waitlist for TypeSafe", "for fun and giggles", "because we can"
+[x] readme - note the inefficiency of this compared to TypeSafe.ai (no unmeasured ratio)
+[x] readme - add how-to / quick start, including requests for both endpoints
+[x] readme - add why Cerebras (fast), with measured results
+[x] readme - add how-to: ask an agent to replace Cerebras with the backend of your choice
+[x] make video demo, convert to GIF, store in repo and embed in README
+    docs/media/demo.mp4 + docs/media/demo.gif; regenerate with scripts/make-demo.py
+    Actual-speed capture of one live Cerebras request; no inserted holds or speed changes.
+[x] readme - benchmark outcomes: latency, tokens/s, input/output usage and cost

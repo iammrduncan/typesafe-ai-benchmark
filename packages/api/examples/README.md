@@ -1,19 +1,19 @@
 # Examples and benchmarks
 
-Run `npm run examples` for seven deterministic synthetic examples against a local
+From the repository root, run `npm run examples` for seven deterministic synthetic examples against a local
 HTTP stub. Run `npm run examples:live` to use Cerebras with the key in `.env`.
 `-- --only=E7` selects a single example. Live runs enforce at most 32 provider calls
 and a conservative $1 list-price ceiling; there are no retries. A fresh random
 proxy credential is created in memory and never printed. No real user records,
 real devices, transfers, or external tools are involved.
 
-`fixtures.ts` defines TypeSafe requests and normal OpenAI messages/json_schema
-requests. `policies.ts` supplies caller-side routing, simulated device actions,
+`../src/examples/fixtures.ts` defines TypeSafe requests and normal OpenAI messages/json_schema
+requests. `../src/examples/policies.ts` supplies caller-side routing, simulated device actions,
 guardrail decisions, and a local chart preview. `run.ts` prints only validated
 results and policy decisions. Errors produce no action. Thresholds are illustrative,
 not calibrated safety guarantees. Live judgments can differ from fixture labels.
 
-Sources and adaptations are recorded in [the example catalog](../docs/examples.md).
+Sources and adaptations are recorded in [the example catalog](../../../docs/examples.md).
 The live report at `docs/live-results.json` contains actual outputs, including
 wrong judgments; it is not a quality certification.
 

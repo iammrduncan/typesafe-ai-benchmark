@@ -19,7 +19,8 @@ Refusal, truncation, malformed JSON, duplicate keys, extra output fields, prose,
 wrong types, out-of-range numbers, and invalid distributions fail closed with a
 sanitized error. Provider reasoning, tool calls, errors, identifiers, and arbitrary
 metadata cannot be copied into the public answer. Explicit non-null tool calls are
-rejected. Optional numeric timing and token counters go only to internal telemetry.
+rejected. Optional numeric timing goes only to internal telemetry; validated token
+counters also populate the public usage fields.
 No tools, URLs, code, or device operations from model output are executed.
 
 Cerebras and proxy keys are separate and never put into prompt content. Logs use

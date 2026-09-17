@@ -20,10 +20,11 @@ function fail(): never { throw new Fault('invalid_schema', 400); }
 
 // A bounded schema subset is interpreted once into a numeric codec. No user schema
 // is evaluated as code, and no provider string is ever used as an output value.
-export function compileSchema(input: unknown): { job: Job; decode: (values: number[]) => Value } {
+export function compileSchema(input: unknown, description?: string): { job: Job; decode: (values: number[]) => Value } {
   if (Buffer.byteLength(JSON.stringify(input) ?? '') > 65_536) return fail();
   const slots: NumericSlot[] = [];
   const rubrics: unknown[] = [];
+  const context: { field: string[]; description: string }[] = [];
   let propertyCount = 0;
   let enumCount = 0;
   function build(raw: unknown, path: string[], depth: number): Node {
@@ -31,6 +32,7 @@ export function compileSchema(input: unknown): { job: Job; decode: (values: numb
     const parsed = rawSchema.safeParse(raw);
     if (!parsed.success || !record(raw)) return fail();
     const s = parsed.data;
+    if (s.description && (s.type === 'object' || s.type === 'array')) context.push({ field: path, description: s.description });
     const common = ['type', 'description', 'title'];
     const permitted = s.type === 'object' ? ['properties', 'required', 'additionalProperties']
       : s.type === 'array' ? ['prefixItems', 'items']
@@ -65,7 +67,9 @@ export function compileSchema(input: unknown): { job: Job; decode: (values: numb
       enumCount += values.length;
       if (enumCount > 500) return fail();
       slots.push({ type: 'integer', minimum: 0, maximum: values.length - 1 });
-      rubrics.push({ field: path, description: s.description ?? '', allowedSelections: values });
+      // Explicit indices avoid models treating a two-choice selection as a yes/no
+      // probability (1) or using one-based positions. The decoder stays unchanged.
+      rubrics.push({ field: path, description: s.description ?? '', allowedSelections: values.map((value, index) => ({ index, value })) });
       return { kind: 'leaf', index, values };
     }
     if (s.minimum === undefined || s.maximum === undefined || Math.abs(s.minimum) > 1e6 || Math.abs(s.maximum) > 1e6) return fail();
@@ -92,7 +96,8 @@ export function compileSchema(input: unknown): { job: Job; decode: (values: numb
       }
     }
   }
-  return { job: { rubric: { task: 'Return one numeric value for each field in order. Selections are ZERO-BASED indices.', fields: rubrics }, slots },
+  return { job: { rubric: { task: 'Return one numeric value for each field in order. Selections are ZERO-BASED indices.',
+    ...(description ? { description } : {}), ...(context.length ? { context } : {}), fields: rubrics }, slots },
     decode(values) { validateNumbers(values, slots); return materialize(root, values); } };
 }
 export function validateNumbers(raw: unknown, slots: NumericSlot[]): number[] {

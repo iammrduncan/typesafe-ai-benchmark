@@ -1,0 +1,30 @@
+{
+  "name": "@decision/demos",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/next.mjs dev",
+    "dev:live": "node scripts/next.mjs dev --live",
+    "start": "node scripts/next.mjs start",
+    "start:live": "node scripts/next.mjs start --live",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test 'tests/*.test.ts'",
+    "build": "next build"
+  },
+  "dependencies": {
+    "@decision/api": "0.0.0",
+    "fastify": "5.12.5",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "0.0.1",
+    "three": "0.186.0",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/three": "0.186.0"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "name": "@decision/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    "./*": {
+      "types": "./dist/*.d.ts",
+      "default": "./dist/*.js"
+    }
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=../../.env --import tsx --watch src/index.ts",
+    "start": "node --env-file-if-exists=../../.env dist/index.js",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.examples.json",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node --import tsx --test 'src/**/*.test.ts'",
+    "examples": "node --import tsx examples/run.ts",
+    "examples:live": "node --env-file=../../.env --import tsx examples/run.ts --live",
+    "benchmark": "node --import tsx examples/benchmark.ts",
+    "benchmark:live": "node --env-file=../../.env --import tsx examples/benchmark.ts --live"
+  },
+  "dependencies": {
+    "@fastify/bearer-auth": "10.1.3",
+    "fastify": "5.12.5",
+    "jsonc-parser": "3.3.1",
+    "zod": "4.6.5"
+  },
+  "devDependencies": {
+    "openai": "7.17.0"
+  }
+}

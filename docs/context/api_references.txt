@@ -1,0 +1,2 @@
+Canonical implemented API specification: api_reference.txt
+Both /v1/systemone and /v1/chat/completions are documented there.

@@ -105,7 +105,7 @@ export async function createServer(options: ServerOptions) {
     if (!parsed.success || !parsed.data.messages.some(m => m.role === 'user')) return invalid();
     const input = parsed.data;
     const model = resolveModel(input.model, options.model ?? 'qwen-3.8-27b');
-    const compiled = compileSchema(input.response_format.json_schema.schema);
+    const compiled = compileSchema(input.response_format.json_schema.schema, input.response_format.json_schema.description);
     const result = await evaluator.evaluate(model, input.messages, [compiled.job], signal(request), request.id);
     signal(request);
     const values = result.results[0]?.values;

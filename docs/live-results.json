@@ -51,6 +51,11 @@
       "usage": {
         "input_tokens": 1065,
         "output_tokens": 41
+      },
+      "decision": {
+        "action": "route_to_team",
+        "team": "billing",
+        "refundReview": true
       }
     },
     {
@@ -110,6 +115,11 @@
       "usage": {
         "input_tokens": 1748,
         "output_tokens": 59
+      },
+      "decision": {
+        "action": "simulated_lights",
+        "kitchen": "off",
+        "hall": "unchanged"
       }
     },
     {
@@ -224,6 +234,11 @@
       "usage": {
         "input_tokens": 4730,
         "output_tokens": 155
+      },
+      "decision": {
+        "statementsSupported": 8,
+        "totalStatements": 8,
+        "review": false
       }
     },
     {
@@ -241,6 +256,18 @@
         "prompt_tokens": 478,
         "completion_tokens": 16,
         "total_tokens": 494
+      },
+      "decision": {
+        "action": "chart_preview",
+        "series": "B",
+        "window": "week",
+        "volume": true,
+        "samples": [
+          20,
+          18,
+          21,
+          22
+        ]
       }
     },
     {
@@ -291,6 +318,9 @@
       "usage": {
         "input_tokens": 1712,
         "output_tokens": 51
+      },
+      "decision": {
+        "action": "block"
       }
     },
     {
@@ -344,6 +374,11 @@
       "usage": {
         "input_tokens": 1087,
         "output_tokens": 38
+      },
+      "decision": {
+        "customer": "Arbor Studio",
+        "invoiceMatches": true,
+        "terms": 1
       }
     },
     {
@@ -359,7 +394,12 @@
         "prompt_tokens": 404,
         "completion_tokens": 10,
         "total_tokens": 414
+      },
+      "decision": {
+        "department": "billing",
+        "refund_requested": 1
       }
     }
-  ]
+  ],
+  "policyReplay": "Caller decisions added offline from preserved live outputs; no new inference or changed judgments."
 }

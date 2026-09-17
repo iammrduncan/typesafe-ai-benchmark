@@ -1,0 +1,23 @@
+'use client';
+import { z } from 'zod';
+import { walls, depot, parcel, type DemoId } from '../lib/catalog';
+import type { ArcadeState } from './use-arcade';
+const urgencySchema = z.object({ answers: z.object({ urgency: z.object({ score: z.number() }) }) });
+const hazardSchema = z.object({ answers: z.record(z.string(), z.object({ noul: z.number() }).or(z.object({ score: z.number() }))) });
+export function DemoStage({ id, state }: { id: DemoId; state: ArcadeState }) {
+  const data = state.panels[id].receipt?.data;
+  const decision = data?.decision;
+  const error = state.panels[id].error;
+  if (id === 'triage') {
+    const urgency = urgencySchema.safeParse(data?.result);
+    return <div className="stage inbox"><div className="inbox-header"><span>SUPPORT DESK</span><span className="tiny-dot" /></div>
+      <div className="ticket"><div className="avatar">JD</div><div><strong>Customer request</strong><p>{state.inputs.triage}</p></div><span className={`urgency ${urgency.success && urgency.data.answers.urgency.score >= 1.5 ? 'hot' : ''}`}>{!data ? 'NEW' : urgency.success && urgency.data.answers.urgency.score >= 1.5 ? 'URGENT' : 'NORMAL'}</span></div>
+      <div className="route-line"><span>Incoming</span><span>→</span><span>{decision?.action === 'route_to_team' ? String(decision.team) : decision ? 'Human review' : 'Unassigned'}</span></div>
+      <div className="queues">{['billing', 'technical', 'other'].map((team, i) => <div key={team} className={decision?.action === 'route_to_team' && decision.team === team ? 'selected' : ''}><b>0{i + 1}</b>{team}</div>)}</div>
+      <div className="outcome" aria-live="polite">{error ?? (!decision ? 'No action taken yet.' : decision.action === 'human_review' ? 'Uncertain routing: review needed.' : decision.refundReview ? 'Refund review queued. No money moved.' : 'Ticket routed.')}</div></div>;
+  }
+  if (id === 'home') return <div className="stage house"><div className="house-label">A SIMULATED HOME <button className="text-button" disabled={state.panels.home.busy} onClick={state.resetLights}>Reset</button></div><div className="rooms">{(['kitchen', 'hall'] as const).map(room => <div key={room} className={`room ${state.lights[room] ? 'lit' : ''}`} data-room={room}><span className="room-name">{room.toUpperCase()}</span><div className="bulb">✦</div>{room === 'kitchen' ? <><div className="countertop" /><div className="table" /></> : <div className="hall-table" />}<span className="light-state">{state.lights[room] ? 'ON' : 'OFF'}</span></div>)}</div><div className="outcome" aria-live="polite">{error ?? (!decision ? 'Your words control these lights.' : decision.action === 'clarify' ? 'Clarification needed. No lights changed.' : `Kitchen ${decision.kitchen} / hall ${decision.hall}.`)}</div></div>;
+  if (id === 'courier') return <div className="stage game"><div className="game-head"><span>PARCEL RUNNER</span><span>{state.courier.steps} decisions{state.courier.carrying ? ' / carrying' : ''}</span></div><div className="board" role="img" aria-label={`Courier at cell ${state.courier.position}; ${state.courier.delivered ? 'parcel delivered' : state.courier.carrying ? 'carrying parcel' : 'seeking parcel'}`}>{Array.from({ length: 45 }, (_, i) => <div key={i} title={`Cell ${i}${walls.includes(i) ? ', blocked' : ''}`} className={['cell', walls.includes(i) ? 'wall' : '', state.courier.visited.includes(i) ? 'visited' : '', i === depot ? 'depot' : '', i === parcel && !state.courier.carrying ? 'parcel' : '', i === state.courier.position ? 'robot' : ''].join(' ')}>{i === state.courier.position ? state.courier.carrying ? '▣' : '●' : i === parcel && !state.courier.carrying ? '◆' : i === depot ? '⌂' : ''}</div>)}</div><div className="legend"><span><i className="legend-depot" />depot</span><span><i className="legend-parcel" />parcel</span><span><i className="legend-wall" />blocked</span></div><div className="outcome" aria-live="polite">{error ?? state.missionNote}</div></div>;
+  const hazards = hazardSchema.safeParse(data?.result);
+  return <div className="stage screening"><div className="inbox-header"><span>OUTPUT CONTRACT GATE</span><span>4 CHECKS + SEVERITY</span></div><div className={`verdict ${String(decision?.action ?? '')}`}>{decision ? String(decision.action).toUpperCase() : '—'}</div><div className="hazards">{['override', 'secret_request', 'format_attack', 'forced_values'].map(k => { const value = hazards.success ? hazards.data.answers[k] : undefined; return <div key={k}><span>{k.replaceAll('_', ' ')}</span><strong>{value && 'noul' in value ? value.noul.toFixed(2) : '—'}</strong></div>; })}</div><div className="outcome" aria-live="polite">{error ?? (decision ? 'Caller policy applied to typed judgments.' : 'Try an instruction-bypass attempt.')}</div></div>;
+}

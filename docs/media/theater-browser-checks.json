@@ -1,0 +1,134 @@
+{
+  "date": "2026-09-16",
+  "source": "Playwright checks against built local fixture app and secure live Tailscale app",
+  "singleStream": {
+    "requests": 100,
+    "maxInFlight": 1,
+    "validated": 100
+  },
+  "cancellation": {
+    "dispatched": 5,
+    "canceled": 5,
+    "noAdvanceAfterStop": true
+  },
+  "layout": {
+    "scenes": 6,
+    "viewports": [
+      [
+        1512,
+        900
+      ],
+      [
+        1280,
+        720
+      ],
+      [
+        1024,
+        600
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        375,
+        667
+      ]
+    ],
+    "checks": 30,
+    "documentOverflow": false
+  },
+  "webgpu": {
+    "backend": "WebGPUBackend",
+    "verifiedAfterRendererInit": true,
+    "secureOrigin": "https://josephs-macbook-pro.taila9c138.ts.net"
+  },
+  "liveInitialRun": [
+    {
+      "scene": "dispatch",
+      "requests": 100,
+      "validated": 100,
+      "elapsedMs": 5781.699999809265,
+      "inputTokens": 62160,
+      "outputTokens": 1600,
+      "estimatedKnownCostUsd": 0.0639224,
+      "unknownUsage": 0,
+      "car": null
+    },
+    {
+      "scene": "navigate",
+      "requests": 3,
+      "validated": 3,
+      "elapsedMs": 1144.1000003814697,
+      "inputTokens": 6585,
+      "outputTokens": 21,
+      "estimatedKnownCostUsd": 0.006550439999999999,
+      "unknownUsage": 0,
+      "car": null
+    },
+    {
+      "scene": "drive",
+      "requests": 36,
+      "validated": 35,
+      "elapsedMs": 10001.099999904633,
+      "inputTokens": 26757,
+      "outputTokens": 312,
+      "estimatedKnownCostUsd": 0.02695431,
+      "unknownUsage": 1,
+      "car": {
+        "x": 4.1691999988555875,
+        "z": 115.01943953575963,
+        "speed": 0.9232087502431929,
+        "collisions": 2,
+        "distance": 115.01943953575963,
+        "elapsedMs": 10000
+      }
+    },
+    {
+      "scene": "screen",
+      "requests": 100,
+      "validated": 100,
+      "elapsedMs": 6161.400000095367,
+      "inputTokens": 42280,
+      "outputTokens": 700,
+      "estimatedKnownCostUsd": 0.0429002,
+      "unknownUsage": 0,
+      "car": null
+    },
+    {
+      "scene": "approve",
+      "requests": 100,
+      "validated": 100,
+      "elapsedMs": 4433.5,
+      "inputTokens": 44260,
+      "outputTokens": 692,
+      "estimatedKnownCostUsd": 0.044848479999999996,
+      "unknownUsage": 0,
+      "car": null
+    },
+    {
+      "scene": "judge",
+      "requests": 100,
+      "validated": 90,
+      "elapsedMs": 4647.300000190735,
+      "inputTokens": 45022,
+      "outputTokens": 805,
+      "estimatedKnownCostUsd": 0.04577123,
+      "unknownUsage": 10,
+      "car": null
+    }
+  ],
+  "navigationRecheck": {
+    "hops": 8,
+    "destination": {
+      "next": 4,
+      "move": "east"
+    },
+    "elapsedMs": 2622.800000190735
+  },
+  "scoringRecheck": {
+    "requests": 100,
+    "validated": 100,
+    "elapsedMs": 5199.699999809265
+  }
+}

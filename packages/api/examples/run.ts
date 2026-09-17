@@ -7,8 +7,8 @@ import { parseSystemOne, questionJob, chatRequest } from '../src/contracts.js';
 import { compileSchema } from '../src/schema.js';
 import { providerBody } from '../src/cerebras.js';
 import { limits, parseJson, record } from '../src/json.js';
-import { examples } from './fixtures.js';
-import { decide } from './policies.js';
+import { examples } from '../src/examples/fixtures.js';
+import { decide } from '../src/examples/policies.js';
 
 const live = process.argv.includes('--live');
 const only = process.argv.find(arg => arg.startsWith('--only='))?.slice(7);
@@ -26,7 +26,7 @@ for (const example of selected) {
     return { messages: parsed.messages, jobs: parsed.questions.map(q => questionJob(q.question)) };
   })() : (() => {
     const parsed = chatRequest.parse(example.payload);
-    return { messages: parsed.messages, jobs: [compileSchema(parsed.response_format.json_schema.schema).job] };
+    return { messages: parsed.messages, jobs: [compileSchema(parsed.response_format.json_schema.schema, parsed.response_format.json_schema.description).job] };
   })();
   plan.jobs.forEach((job, index) => {
     const body = providerBody('qwen-3.8-27b', plan.messages, job);
@@ -77,7 +77,7 @@ try {
     console.log(JSON.stringify({ id: example.id, mode: report.mode, status: response.statusCode, elapsedMs, result, decision }));
     if (response.statusCode !== 200) process.exitCode = 1;
   }
-  const reportPath = live ? 'docs/live-results.json' : '/tmp/typesafe-examples-stub-results.json';
+  const reportPath = live ? new URL('../../../docs/live-results.json', import.meta.url) : '/tmp/typesafe-examples-stub-results.json';
   await writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');
   console.log(`Report: ${reportPath}. Planned provider calls: ${plannedCalls}; conservative cost ceiling: $${conservativeCostUsd.toFixed(3)}.`);
 } finally { await server.close(); await upstream?.close(); }

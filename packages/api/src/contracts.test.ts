@@ -5,6 +5,18 @@ import { compileSchema } from './schema.js';
 import { parseJson } from './json.js';
 import { providerBody } from './cerebras.js';
 import { noulRequest } from './test-support.js';
+import { z } from 'zod';
+
+test('provider selection indices are explicit and agree with decoding, including reversed enums', () => {
+  for (const labels of [['allow', 'block'], ['block', 'allow']]) {
+    const compiled = compileSchema({ type: 'object', properties: {
+      decision: { type: 'string', enum: labels }, valid: { type: 'boolean' },
+    }, required: ['decision', 'valid'], additionalProperties: false });
+    const rubric = z.object({fields:z.array(z.object({allowedSelections:z.array(z.object({index:z.number(),value:z.union([z.string(),z.boolean()])}))}))}).parse(compiled.job.rubric);
+    assert.deepEqual(rubric.fields.map(f=>f.allowedSelections), [labels.map((value,index)=>({index,value})), [{index:0,value:false},{index:1,value:true}]]);
+    for (const index of [0, 1]) assert.deepEqual(compiled.decode([index,index]), {decision:labels[index],valid:index===1});
+  }
+});
 
 test('duplicate keys, escaped duplicates, nonfinite JSON and depth are rejected', () => {
   for (const text of ['{"x":1,"x":2}', '{"x":1,"\\u0078":2}', '{"x":1e999}', '{"x":1,}', '{/*comment*/"x":1}', '['.repeat(33) + '0' + ']'.repeat(33)]) assert.throws(() => parseJson(text));
@@ -58,4 +70,23 @@ test('prototype-like output keys and option labels round trip without mutation',
   const q = input.questions[0]; assert.ok(q);
   const result = answer(q.question, [1, 0]);
   assert.ok(JSON.stringify(result).includes('"__proto__":1'));
+});
+
+test('contract boundaries accept 255 choices and ten score levels only', () => {
+  const criteria = Object.fromEntries(Array.from({ length: 255 }, (_, i) => [`option_${i}`, null]));
+  const request = { ...noulRequest, questions: { select: { type: 'choice', instructions: 'Pick', criteria } } };
+  const parsed = parseSystemOne(request, 'qwen-3.8-27b');
+  const first = parsed.questions[0]; assert.ok(first);
+  assert.equal(questionJob(first.question).slots.length, 255);
+  assert.throws(() => parseSystemOne({ ...request, questions: { select: { ...request.questions.select, criteria: { ...criteria, extra: null } } } }, 'qwen-3.8-27b'));
+  for (const size of [1, 2, 10, 11]) {
+    const run = () => parseSystemOne({ ...noulRequest, questions: { s: { type: 'score', instructions: null, criteria: Array.from({ length: size }, () => null) } } }, 'qwen-3.8-27b');
+    if (size === 2 || size === 10) assert.doesNotThrow(run); else assert.throws(run);
+  }
+});
+test('root and enclosing schema descriptions remain part of the rubric', () => {
+  const compiled = compileSchema({ type: 'object', description: 'Root rubric', properties: {
+    result: { type: 'object', description: 'Nested rubric', properties: { approved: { type: 'boolean', description: 'Leaf rubric' } }, required: ['approved'], additionalProperties: false },
+  }, required: ['result'], additionalProperties: false }, 'Envelope rubric');
+  for (const description of ['Root rubric', 'Nested rubric', 'Leaf rubric', 'Envelope rubric']) assert.ok(JSON.stringify(compiled.job.rubric).includes(description));
 });

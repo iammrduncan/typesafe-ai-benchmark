@@ -148,7 +148,7 @@
       "upstreamRoundTripMs": 1.3273750000000177,
       "localQueueWaitMs": 0.009916999999973086,
       "localAndLoopbackMs": 1.618583000000001,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -163,7 +163,7 @@
       "upstreamRoundTripMs": 0.8947499999999877,
       "localQueueWaitMs": 0.04475000000002183,
       "localAndLoopbackMs": 1.3807499999999777,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -178,7 +178,7 @@
       "upstreamRoundTripMs": 1.897625000000005,
       "localQueueWaitMs": 0.010541999999986729,
       "localAndLoopbackMs": 0.9972080000000005,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -193,7 +193,7 @@
       "upstreamRoundTripMs": 1.7743749999999636,
       "localQueueWaitMs": 0.01037500000001046,
       "localAndLoopbackMs": 1.88250000000005,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -208,7 +208,7 @@
       "upstreamRoundTripMs": 0.4971249999999827,
       "localQueueWaitMs": 0.006790999999964242,
       "localAndLoopbackMs": 0.7402090000000499,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -223,7 +223,7 @@
       "upstreamRoundTripMs": 0.9397920000000113,
       "localQueueWaitMs": 0.007790999999997439,
       "localAndLoopbackMs": 0.8358339999999771,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -238,7 +238,7 @@
       "upstreamRoundTripMs": 0.6376669999999649,
       "localQueueWaitMs": 0.009375000000034106,
       "localAndLoopbackMs": 0.70637499999998,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -253,7 +253,7 @@
       "upstreamRoundTripMs": 0.8545830000000478,
       "localQueueWaitMs": 0.006666999999993095,
       "localAndLoopbackMs": 1.2415419999999813,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -268,7 +268,7 @@
       "upstreamRoundTripMs": 0.5731250000000045,
       "localQueueWaitMs": 0.009417000000041753,
       "localAndLoopbackMs": 0.7454999999999927,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -283,7 +283,7 @@
       "upstreamRoundTripMs": 0.6610000000000014,
       "localQueueWaitMs": 0.006249999999965894,
       "localAndLoopbackMs": 0.7411250000000109,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -298,7 +298,7 @@
       "upstreamRoundTripMs": 0.5228749999999991,
       "localQueueWaitMs": 0.0054160000000251785,
       "localAndLoopbackMs": 0.6636259999999652,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -313,7 +313,7 @@
       "upstreamRoundTripMs": 0.5826250000000073,
       "localQueueWaitMs": 0.006832999999971889,
       "localAndLoopbackMs": 0.8097510000000057,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -328,7 +328,7 @@
       "upstreamRoundTripMs": 0.4516669999999863,
       "localQueueWaitMs": 0.006666999999993095,
       "localAndLoopbackMs": 0.6127080000000547,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -343,7 +343,7 @@
       "upstreamRoundTripMs": 0.4317500000000223,
       "localQueueWaitMs": 0.00437499999998181,
       "localAndLoopbackMs": 0.47341699999998355,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -358,7 +358,7 @@
       "upstreamRoundTripMs": 0.39562499999999545,
       "localQueueWaitMs": 0.004416999999989457,
       "localAndLoopbackMs": 0.5615830000000415,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -373,7 +373,7 @@
       "upstreamRoundTripMs": 0.37904200000002675,
       "localQueueWaitMs": 0.004334000000028482,
       "localAndLoopbackMs": 0.5966239999999061,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -388,7 +388,7 @@
       "upstreamRoundTripMs": 0.36424999999997,
       "localQueueWaitMs": 0.004208000000005541,
       "localAndLoopbackMs": 0.3869579999999928,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -403,7 +403,7 @@
       "upstreamRoundTripMs": 0.3361659999999915,
       "localQueueWaitMs": 0.005540999999993801,
       "localAndLoopbackMs": 0.5292929999999956,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -418,7 +418,7 @@
       "upstreamRoundTripMs": 0.3347500000000423,
       "localQueueWaitMs": 0.00483299999996234,
       "localAndLoopbackMs": 0.3860419999999749,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -433,7 +433,7 @@
       "upstreamRoundTripMs": 0.40500000000002956,
       "localQueueWaitMs": 0.00533300000000736,
       "localAndLoopbackMs": 0.7246670000000108,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -448,7 +448,7 @@
       "upstreamRoundTripMs": 0.550042000000019,
       "localQueueWaitMs": 0.013334000000043034,
       "localAndLoopbackMs": 0.5447909999999183,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -463,7 +463,7 @@
       "upstreamRoundTripMs": 0.37987500000002683,
       "localQueueWaitMs": 0.004666000000042914,
       "localAndLoopbackMs": 0.46370899999993753,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -478,7 +478,7 @@
       "upstreamRoundTripMs": 0.39058299999999235,
       "localQueueWaitMs": 0.0061249999999972715,
       "localAndLoopbackMs": 0.42525000000000546,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -493,7 +493,7 @@
       "upstreamRoundTripMs": 0.36062499999997044,
       "localQueueWaitMs": 0.00533300000000736,
       "localAndLoopbackMs": 0.38437499999997726,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -508,7 +508,7 @@
       "upstreamRoundTripMs": 0.3795830000000251,
       "localQueueWaitMs": 0.004457999999999629,
       "localAndLoopbackMs": 0.4654170000000022,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -523,7 +523,7 @@
       "upstreamRoundTripMs": 0.40075000000001637,
       "localQueueWaitMs": 0.004209000000003016,
       "localAndLoopbackMs": 0.4206659999999829,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -538,7 +538,7 @@
       "upstreamRoundTripMs": 1.9704580000000078,
       "localQueueWaitMs": 0.00458400000002257,
       "localAndLoopbackMs": 0.5232079999999542,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -553,7 +553,7 @@
       "upstreamRoundTripMs": 0.4900000000000091,
       "localQueueWaitMs": 0.006708000000003267,
       "localAndLoopbackMs": 0.6310829999999896,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -568,7 +568,7 @@
       "upstreamRoundTripMs": 0.38833300000004556,
       "localQueueWaitMs": 0.005749999999977717,
       "localAndLoopbackMs": 0.5050420000000031,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -583,7 +583,7 @@
       "upstreamRoundTripMs": 0.3423750000000041,
       "localQueueWaitMs": 0.004125000000044565,
       "localAndLoopbackMs": 0.3720409999999674,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -598,7 +598,7 @@
       "upstreamRoundTripMs": 0.35758399999997437,
       "localQueueWaitMs": 0.004082999999980075,
       "localAndLoopbackMs": 0.4393750000000409,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -613,7 +613,7 @@
       "upstreamRoundTripMs": 0.3508330000000228,
       "localQueueWaitMs": 0.005291999999997188,
       "localAndLoopbackMs": 0.40679099999999835,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -628,7 +628,7 @@
       "upstreamRoundTripMs": 0.38383299999998144,
       "localQueueWaitMs": 0.010041999999998552,
       "localAndLoopbackMs": 0.4082910000000197,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -643,7 +643,7 @@
       "upstreamRoundTripMs": 0.39745800000002873,
       "localQueueWaitMs": 0.005541999999991276,
       "localAndLoopbackMs": 0.4822080000000142,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -658,7 +658,7 @@
       "upstreamRoundTripMs": 0.5287500000000023,
       "localQueueWaitMs": 0.01125000000001819,
       "localAndLoopbackMs": 0.5625,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -673,7 +673,7 @@
       "upstreamRoundTripMs": 0.6192910000000325,
       "localQueueWaitMs": 0.005124999999964075,
       "localAndLoopbackMs": 0.6081680000000347,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -688,7 +688,7 @@
       "upstreamRoundTripMs": 0.4316249999999968,
       "localQueueWaitMs": 0.006332999999983713,
       "localAndLoopbackMs": 0.5933760000000348,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -703,7 +703,7 @@
       "upstreamRoundTripMs": 0.35608300000001236,
       "localQueueWaitMs": 0.004667000000040389,
       "localAndLoopbackMs": 0.43212499999992815,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -718,7 +718,7 @@
       "upstreamRoundTripMs": 0.36704199999996945,
       "localQueueWaitMs": 0.004208000000005541,
       "localAndLoopbackMs": 0.37737499999997226,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -733,7 +733,7 @@
       "upstreamRoundTripMs": 0.351791999999989,
       "localQueueWaitMs": 0.004124999999987722,
       "localAndLoopbackMs": 0.4135830000000169,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -748,7 +748,7 @@
       "upstreamRoundTripMs": 0.36112500000001546,
       "localQueueWaitMs": 0.006874999999979536,
       "localAndLoopbackMs": 0.36095900000003667,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -763,7 +763,7 @@
       "upstreamRoundTripMs": 0.3738749999999982,
       "localQueueWaitMs": 0.004166999999995369,
       "localAndLoopbackMs": 0.37733300000002146,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -778,7 +778,7 @@
       "upstreamRoundTripMs": 0.36837500000001455,
       "localQueueWaitMs": 0.005749999999977717,
       "localAndLoopbackMs": 0.4033330000000319,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -793,7 +793,7 @@
       "upstreamRoundTripMs": 0.4608329999999796,
       "localQueueWaitMs": 0.005708999999967546,
       "localAndLoopbackMs": 0.4244160000000079,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -808,7 +808,7 @@
       "upstreamRoundTripMs": 0.35670899999996664,
       "localQueueWaitMs": 0.006209000000012566,
       "localAndLoopbackMs": 0.4297480000000178,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -823,7 +823,7 @@
       "upstreamRoundTripMs": 0.5422909999999774,
       "localQueueWaitMs": 0.004292000000020835,
       "localAndLoopbackMs": 0.5606260000000134,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -838,7 +838,7 @@
       "upstreamRoundTripMs": 0.39995800000002646,
       "localQueueWaitMs": 0.005959000000018477,
       "localAndLoopbackMs": 0.559791999999959,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -853,7 +853,7 @@
       "upstreamRoundTripMs": 0.363207999999986,
       "localQueueWaitMs": 0.004249999999956344,
       "localAndLoopbackMs": 0.5006670000000781,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -868,7 +868,7 @@
       "upstreamRoundTripMs": 0.3125830000000178,
       "localQueueWaitMs": 0.004208000000005541,
       "localAndLoopbackMs": 0.4002929999999765,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -883,7 +883,7 @@
       "upstreamRoundTripMs": 0.37412499999999227,
       "localQueueWaitMs": 0.003958000000011452,
       "localAndLoopbackMs": 0.372333000000026,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -898,7 +898,7 @@
       "upstreamRoundTripMs": 0.3365000000000009,
       "localQueueWaitMs": 0.006750000000010914,
       "localAndLoopbackMs": 0.40349999999995134,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -913,7 +913,7 @@
       "upstreamRoundTripMs": 0.33704199999999673,
       "localQueueWaitMs": 0.0043750000000386535,
       "localAndLoopbackMs": 0.4770409999999856,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -928,7 +928,7 @@
       "upstreamRoundTripMs": 0.34337499999998045,
       "localQueueWaitMs": 0.004750000000001364,
       "localAndLoopbackMs": 0.4530419999999822,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -943,7 +943,7 @@
       "upstreamRoundTripMs": 0.32587499999999636,
       "localQueueWaitMs": 0.005541999999991276,
       "localAndLoopbackMs": 0.6899999999999977,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -958,7 +958,7 @@
       "upstreamRoundTripMs": 0.535583000000031,
       "localQueueWaitMs": 0.01074999999997317,
       "localAndLoopbackMs": 1.5289999999999964,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -973,7 +973,7 @@
       "upstreamRoundTripMs": 0.34958299999999554,
       "localQueueWaitMs": 0.005875000000003183,
       "localAndLoopbackMs": 0.5006250000000136,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -988,7 +988,7 @@
       "upstreamRoundTripMs": 0.345833999999968,
       "localQueueWaitMs": 0.009916999999973086,
       "localAndLoopbackMs": 0.40995700000007673,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1003,7 +1003,7 @@
       "upstreamRoundTripMs": 0.302833000000021,
       "localQueueWaitMs": 0.007584000000008473,
       "localAndLoopbackMs": 0.35029099999997015,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1018,7 +1018,7 @@
       "upstreamRoundTripMs": 0.288167000000044,
       "localQueueWaitMs": 0.003917000000001281,
       "localAndLoopbackMs": 0.33024999999997817,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1033,7 +1033,7 @@
       "upstreamRoundTripMs": 0.2820419999999899,
       "localQueueWaitMs": 0.003957999999954609,
       "localAndLoopbackMs": 0.3293750000000273,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1048,7 +1048,7 @@
       "upstreamRoundTripMs": 0.29579200000000583,
       "localQueueWaitMs": 0.004042000000026746,
       "localAndLoopbackMs": 0.3231659999999579,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1063,7 +1063,7 @@
       "upstreamRoundTripMs": 0.27866699999998445,
       "localQueueWaitMs": 0.003916000000003805,
       "localAndLoopbackMs": 0.3397920000000454,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1078,7 +1078,7 @@
       "upstreamRoundTripMs": 0.2913330000000087,
       "localQueueWaitMs": 0.004000000000019099,
       "localAndLoopbackMs": 0.31879199999997354,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1093,7 +1093,7 @@
       "upstreamRoundTripMs": 0.28449999999998,
       "localQueueWaitMs": 0.0038329999999859865,
       "localAndLoopbackMs": 0.3260840000000371,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1108,7 +1108,7 @@
       "upstreamRoundTripMs": 0.40420800000003965,
       "localQueueWaitMs": 0.01220800000004374,
       "localAndLoopbackMs": 0.35233399999987114,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1123,7 +1123,7 @@
       "upstreamRoundTripMs": 0.2999580000000037,
       "localQueueWaitMs": 0.003916000000003805,
       "localAndLoopbackMs": 0.5475849999999696,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1138,7 +1138,7 @@
       "upstreamRoundTripMs": 0.574957999999981,
       "localQueueWaitMs": 0.011832999999967342,
       "localAndLoopbackMs": 0.803209000000038,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1153,7 +1153,7 @@
       "upstreamRoundTripMs": 0.40670799999998053,
       "localQueueWaitMs": 0.004583000000025095,
       "localAndLoopbackMs": 0.4521670000000313,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1168,7 +1168,7 @@
       "upstreamRoundTripMs": 0.3245420000000081,
       "localQueueWaitMs": 0.004208000000005541,
       "localAndLoopbackMs": 0.38766600000002427,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1183,7 +1183,7 @@
       "upstreamRoundTripMs": 0.332416999999964,
       "localQueueWaitMs": 0.005375000000015007,
       "localAndLoopbackMs": 0.3746659999999906,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1198,7 +1198,7 @@
       "upstreamRoundTripMs": 0.33541600000000926,
       "localQueueWaitMs": 0.004042000000026746,
       "localAndLoopbackMs": 0.37183399999997846,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1213,7 +1213,7 @@
       "upstreamRoundTripMs": 0.34745800000001736,
       "localQueueWaitMs": 0.003958000000011452,
       "localAndLoopbackMs": 0.34416699999997036,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1228,7 +1228,7 @@
       "upstreamRoundTripMs": 0.3216249999999832,
       "localQueueWaitMs": 0.004041999999969903,
       "localAndLoopbackMs": 0.344833000000051,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1243,7 +1243,7 @@
       "upstreamRoundTripMs": 0.4057500000000118,
       "localQueueWaitMs": 0.010457999999971435,
       "localAndLoopbackMs": 0.40245900000002166,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1258,7 +1258,7 @@
       "upstreamRoundTripMs": 0.3902089999999703,
       "localQueueWaitMs": 0.0047089999999911925,
       "localAndLoopbackMs": 0.4041230000000269,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1273,7 +1273,7 @@
       "upstreamRoundTripMs": 0.3352909999999838,
       "localQueueWaitMs": 0.0043750000000386535,
       "localAndLoopbackMs": 0.36345899999997755,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1288,7 +1288,7 @@
       "upstreamRoundTripMs": 0.42066699999998036,
       "localQueueWaitMs": 0.00466599999998607,
       "localAndLoopbackMs": 0.39187600000002476,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1303,7 +1303,7 @@
       "upstreamRoundTripMs": 0.31579199999998764,
       "localQueueWaitMs": 0.004833999999959815,
       "localAndLoopbackMs": 0.49112400000001344,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1318,7 +1318,7 @@
       "upstreamRoundTripMs": 0.3802090000000362,
       "localQueueWaitMs": 0.005457999999975982,
       "localAndLoopbackMs": 0.4390000000000214,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1333,7 +1333,7 @@
       "upstreamRoundTripMs": 0.317957999999976,
       "localQueueWaitMs": 0.0043750000000386535,
       "localAndLoopbackMs": 0.357708999999943,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1348,7 +1348,7 @@
       "upstreamRoundTripMs": 0.32912499999997635,
       "localQueueWaitMs": 0.006000000000028649,
       "localAndLoopbackMs": 0.3835409999999797,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1363,7 +1363,7 @@
       "upstreamRoundTripMs": 0.3279579999999669,
       "localQueueWaitMs": 0.00454199999995808,
       "localAndLoopbackMs": 0.36083300000007057,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1378,7 +1378,7 @@
       "upstreamRoundTripMs": 1.6533749999999827,
       "localQueueWaitMs": 0.004666999999983545,
       "localAndLoopbackMs": 0.4210830000000101,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1393,7 +1393,7 @@
       "upstreamRoundTripMs": 0.3669999999999618,
       "localQueueWaitMs": 0.005499999999983629,
       "localAndLoopbackMs": 0.44337500000006,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1408,7 +1408,7 @@
       "upstreamRoundTripMs": 0.2765410000000088,
       "localQueueWaitMs": 0.004542000000014923,
       "localAndLoopbackMs": 0.3773339999999621,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1423,7 +1423,7 @@
       "upstreamRoundTripMs": 0.5159170000000017,
       "localQueueWaitMs": 0.005749999999977717,
       "localAndLoopbackMs": 0.5901250000000573,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1438,7 +1438,7 @@
       "upstreamRoundTripMs": 0.40312499999998863,
       "localQueueWaitMs": 0.00637499999999136,
       "localAndLoopbackMs": 0.5286660000000438,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1453,7 +1453,7 @@
       "upstreamRoundTripMs": 0.3274160000000279,
       "localQueueWaitMs": 0.0044170000000463006,
       "localAndLoopbackMs": 0.3959999999999013,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1468,7 +1468,7 @@
       "upstreamRoundTripMs": 0.3414589999999862,
       "localQueueWaitMs": 0.003958000000011452,
       "localAndLoopbackMs": 0.35462400000000116,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1483,7 +1483,7 @@
       "upstreamRoundTripMs": 0.31024999999999636,
       "localQueueWaitMs": 0.003999999999962256,
       "localAndLoopbackMs": 0.763917000000049,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1498,7 +1498,7 @@
       "upstreamRoundTripMs": 0.32474999999999454,
       "localQueueWaitMs": 0.005291999999997188,
       "localAndLoopbackMs": 0.37195800000000645,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1513,7 +1513,7 @@
       "upstreamRoundTripMs": 0.321708000000001,
       "localQueueWaitMs": 0.004707999999993717,
       "localAndLoopbackMs": 0.3633760000000166,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1528,7 +1528,7 @@
       "upstreamRoundTripMs": 0.4586250000000405,
       "localQueueWaitMs": 0.00591700000001083,
       "localAndLoopbackMs": 0.45274899999998297,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1543,7 +1543,7 @@
       "upstreamRoundTripMs": 0.3247920000000022,
       "localQueueWaitMs": 0.004583000000025095,
       "localAndLoopbackMs": 0.3704579999999851,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1558,7 +1558,7 @@
       "upstreamRoundTripMs": 0.3237089999999512,
       "localQueueWaitMs": 0.004042000000026746,
       "localAndLoopbackMs": 0.35741500000000315,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1573,7 +1573,7 @@
       "upstreamRoundTripMs": 0.32883300000003146,
       "localQueueWaitMs": 0.004458999999997104,
       "localAndLoopbackMs": 0.359457999999961,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1588,7 +1588,7 @@
       "upstreamRoundTripMs": 0.4379160000000297,
       "localQueueWaitMs": 0.004917000000034477,
       "localAndLoopbackMs": 0.4179589999998825,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1603,7 +1603,7 @@
       "upstreamRoundTripMs": 0.3142080000000078,
       "localQueueWaitMs": 0.007667000000026292,
       "localAndLoopbackMs": 0.725708999999938,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/systemone",
@@ -1618,7 +1618,7 @@
       "upstreamRoundTripMs": 0.3977499999999736,
       "localQueueWaitMs": 0.006624999999985448,
       "localAndLoopbackMs": 0.5722920000000613,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     },
     {
       "route": "/v1/chat/completions",
@@ -1633,7 +1633,7 @@
       "upstreamRoundTripMs": 0.338957999999991,
       "localQueueWaitMs": 0.004500000000007276,
       "localAndLoopbackMs": 0.4216250000000059,
-      "estimatedCostUsd": 0.0001139
+      "estimatedCostUsd": 0
     }
   ],
   "providerMetrics": [

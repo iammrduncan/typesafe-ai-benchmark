@@ -1,4 +1,4 @@
-# TypeSafe AI Benchmark: LLM-native Qwen vs. Jev
+# TypeSafe AI Benchmark: Qwen, Jev and local Needle 3
 
 This report compares provider-native LLM structured output from **Qwen 3.8 27B on
 Cerebras** with **TypeSafe Jev’s native judgment API**. Qwen is the chosen fast LLM
@@ -13,14 +13,22 @@ the figures below come from the newly captured JSON exports.
 
 ## Overall results
 
-| Measurement | Qwen 3.8 27B · Cerebras | Jev · TypeSafe |
-| --- | ---: | ---: |
-| Validated / dispatched | 475 / 476 | 479 / 480 |
-| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 |
-| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms |
-| Input / output tokens | 305,915 / 5,185 | 297,984 / 43,836 |
-| Known estimated cost | $0.310581 | $0.011919 |
-| Sum of scene durations | 70.02 s | 55.54 s |
+| Measurement | Qwen 3.8 27B · Cerebras | Jev · TypeSafe | Needle 3 · local¹ |
+| --- | ---: | ---: | ---: |
+| Validated / dispatched | 475 / 476 | 479 / 480 | 327 / 442 |
+| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 | 114 / 1 |
+| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms | 403 / 867 / 919 ms |
+| Input / output tokens | 305,915 / 5,185 | 297,984 / 43,836 | Unavailable |
+| Known estimated API cost | $0.310581 | $0.011919 | $0² |
+| Sum of scene durations | 70.02 s | 55.54 s | 132.03 s |
+
+¹ Needle measured separately **2026-09-18 UTC**, directly through the demo runtime
+on an Apple M4 Pro; Qwen/Jev measured in the browser on September 17. Same contracts,
+static input order and concurrency, but no browser/HTTP overhead or competing lane
+for Needle. This is **not a controlled speed ranking**.
+² Zero API fees excludes local hardware/electricity. Needle's median native decode
+rate was **846 tok/s**, distinct from its **403 ms** median successful request.
+[Needle raw results, failures and reproduction](needle/README.md).
 
 No HTTP failures or rate limits occurred. Each driving lane canceled one in-flight
 request at its ten-second deadline. Cost excludes unknown usage for those calls.
@@ -42,13 +50,17 @@ percentiles use nearest rank and exclude cancellations. No decode-speed claim is
 
 ## Judgment outcomes
 
-| Exact fixture agreement | Qwen | Jev |
-| --- | ---: | ---: |
-| Tickets | 75/100 | 75/100 |
-| Guardrails | 100/100 | 100/100 |
-| Approvals | 100/100 | 95/100 |
-| Scoring | 93/100 | 100/100 |
-| Home | 24/24 | 15/24 |
+| Exact fixture agreement / dispatched | Qwen | Jev | Needle 3 |
+| --- | ---: | ---: | ---: |
+| Tickets | 75/100 | 75/100 | 0/100 |
+| Guardrails | 100/100 | 100/100 | 43/100 |
+| Approvals | 100/100 | 95/100 | 45/100 |
+| Scoring | 93/100 | 100/100 | 1/100 |
+| Home | 24/24 | 15/24 | 0/24 |
+
+Needle stopped routing after one valid hop and an invalid response. Driving produced
+no valid control outputs; its 34.6 m came from initial coasting/physics. Invalid
+outputs count as non-matches above; all mismatches remain in the raw results.
 
 Routing reached junction 4 from 20 in eight hops on each side, following different
 paths. Driving covered **94.58 m (Qwen)** and **84.25 m (Jev)**, with one collision

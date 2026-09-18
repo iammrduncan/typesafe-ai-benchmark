@@ -6,7 +6,8 @@
 
 How does a fast general-purpose LLM compare with a purpose-built judgment model
 on the same application tasks? This benchmark runs **Qwen 3.8 27B on Cerebras**
-and **TypeSafe Jev** side by side across seven synthetic workloads. It records
+and **TypeSafe Jev** side by side across seven synthetic workloads, with a
+separate local **Needle 3** evaluation on the same contracts. It records
 validated outputs, mistakes, request latency, token usage and estimated cost.
 
 [![Qwen on Cerebras vs. Jev — side-by-side benchmark demo](docs/media/theater-demo.gif)](docs/media/theater-demo.mp4)
@@ -23,13 +24,14 @@ come from the separately captured browser exports linked below.
 | Approach | Model / provider | One application decision |
 | --- | --- | --- |
 | **LLM-native structured output** | Qwen 3.8 27B / Cerebras | One schema-constrained LLM response, validated and decoded locally |
+| **Local tool-calling model** | Needle 3 / Cactus native runtime | One tool call, strictly validated before any simulated action |
 | **Native judgment API** | Jev / TypeSafe | One request batching native Choice/Noul questions, mapped to the same application output |
 
 “LLM-native” means using the LLM provider’s structured-output capability. The
 benchmark compiles application fields into compact numeric slots, asks Qwen for
 one constrained response, then reconstructs the typed result. It does not ask
 Qwen to emulate Jev probabilities in this comparison. Jev's native probabilities
-remain available in the exports. Both paths validate outputs before applying
+remain available in the exports. All paths validate outputs before applying
 simulated actions. [Exact mapping and differences](docs/jev.md).
 
 ## Why Qwen on Cerebras?
@@ -50,29 +52,41 @@ Measured **2026-09-17 UTC**, running both providers together through the product
 side-by-side theater. All seven scenes completed; no rate limits or retries.
 Static scenes used two concurrent requests per model; stateful scenes used one.
 
-| Measurement | Qwen 3.8 27B · Cerebras | Jev · TypeSafe |
-| --- | ---: | ---: |
-| Validated / dispatched | 475 / 476 | 479 / 480 |
-| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 |
-| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms |
-| Input / output tokens | 305,915 / 5,185 | 297,984 / 43,836 |
-| Known estimated cost | $0.310581 | $0.011919 |
-| Sum of scene durations | 70.02 s | 55.54 s |
+| Measurement | Qwen 3.8 27B · Cerebras | Jev · TypeSafe | Needle 3 · local¹ |
+| --- | ---: | ---: | ---: |
+| Validated / dispatched | 475 / 476 | 479 / 480 | 327 / 442 |
+| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 | 114 / 1 |
+| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms | 403 / 867 / 919 ms |
+| Input / output tokens | 305,915 / 5,185 | 297,984 / 43,836 | Unavailable |
+| Known estimated API cost | $0.310581 | $0.011919 | $0² |
+| Sum of scene durations | 70.02 s | 55.54 s | 132.03 s |
+
+¹ Needle measured separately **2026-09-18 UTC**, directly through the demo runtime
+on an Apple M4 Pro; Qwen/Jev measured in the browser on September 17. Same contracts,
+static input order and concurrency, but no browser/HTTP overhead or competing lane
+for Needle. This is **not a controlled speed ranking**.
+² Zero API fees excludes local hardware/electricity. Needle's median native decode
+rate was **846 tok/s**, distinct from its **403 ms** median successful request.
+[Needle raw results, failures and reproduction](docs/benchmarks/needle/README.md).
 
 Latency measures successful browser requests, including local handling and
 validation. Scene durations exclude operator gaps; the two columns overlap in
 real time. Driving stops at ten seconds and cancels its outstanding request.
 Unknown canceled-call usage is excluded from estimated cost.
 
-| Exact fixture agreement | Qwen | Jev |
-| --- | ---: | ---: |
-| Tickets | 75/100 | 75/100 |
-| Guardrails | 100/100 | 100/100 |
-| Approvals | 100/100 | 95/100 |
-| Scoring | 93/100 | 100/100 |
-| Home | 24/24 | 15/24 |
+| Exact fixture agreement / dispatched | Qwen | Jev | Needle 3 |
+| --- | ---: | ---: | ---: |
+| Tickets | 75/100 | 75/100 | 0/100 |
+| Guardrails | 100/100 | 100/100 | 43/100 |
+| Approvals | 100/100 | 95/100 | 45/100 |
+| Scoring | 93/100 | 100/100 | 1/100 |
+| Home | 24/24 | 15/24 | 0/24 |
 
-Both reached the routing destination in eight hops. Driving covered **94.6 m /
+Needle stopped routing after one valid hop and an invalid response. Driving produced
+no valid control outputs; its 34.6 m came from initial coasting/physics. Invalid
+outputs count as non-matches above; all mismatches remain in the raw results.
+
+Qwen and Jev both reached the routing destination in eight hops. Driving covered **94.6 m /
 84.2 m**, respectively, with **one collision each**. Fixture agreement is separate
 from valid output: Jev matched Scoring more often, while Qwen matched Approvals
 and Home more often in this run.

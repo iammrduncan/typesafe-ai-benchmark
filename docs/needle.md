@@ -151,3 +151,11 @@ simulated environment. They do not demonstrate the model finding a path through 
 street graph. Our per-hop navigation benchmark asks a different question. Matching
 their approach would mean adding an explicitly labeled command-to-navigation demo,
 not treating a displayed animation as evidence that Needle chose each turn.
+
+## Published seven-scene benchmark
+
+The [2026-09-18 local run](benchmarks/needle/README.md) includes all seven shared
+workloads, unmodified per-request results, failures, fixture mismatches, engine
+rates, environment hashes and reproduction commands. It validated 327/442 requests;
+median successful direct-runtime latency was 403 ms. This is a separate measurement
+from the historical Qwen/Jev browser run, not a simultaneous latency comparison.

@@ -221,6 +221,11 @@ Client disconnect/deadline cancels queued and active work. A fatal job cancels
 siblings. Shutdown aborts active controllers. Completed work before cancellation
 can still be billed. No automatic retries, fallback or repair. Provider error
 bodies/Retry-After headers are not relayed. Unknown provider errors are sanitized.
+Upstream 401 is reported as provider_authentication_failed (HTTP 502), distinct
+from the client's proxy credential failure (HTTP 401). Checked 2026-09-17 against
+https://inference-docs.cerebras.ai/console/api-keys and https://docs.typesafe.ai/api.
+The local demo names the affected provider/environment setting and stops dispatch
+on credential rejection or rate limiting, retaining already dispatched results.
 
 OpenAI error body:
 {"error":{"message":"Safe summary","type":"invalid_request_error",
@@ -241,6 +246,7 @@ HTTP (TypeSafe / OpenAI)   code
 529 / 503                 overloaded
 500 / 500                 internal_error
 502 / 502                 provider_unavailable
+502 / 502                 provider_authentication_failed
 502 / 502                 invalid_provider_output
 504 / 504                 deadline_exceeded
 

@@ -99,6 +99,13 @@ test('Jev HTTP errors are sanitized, no retries occur, and deadlines release run
       assert.ok(up && expected); status = up;
       const result = await runtime.run(input('screen'), new AbortController().signal);
       assert.equal(result.status, expected); assert.ok(!JSON.stringify(result).includes('SECRET'));
+      if (up === 401) {
+        const body = z.object({ code: z.string(), error: z.string() }).parse(result.body);
+        assert.equal(body.code, 'provider_authentication_failed');
+        assert.match(body.error, /Jev rejected its API key/);
+        assert.match(body.error, /restart the demo server/);
+        assert.ok(!JSON.stringify(result.body).includes('"decision"'));
+      }
     }
     assert.equal(calls, 6);
     await assert.rejects(requestJev(jevPlan(input('screen')), 'SECRET', AbortSignal.timeout(5), endpoint), { code: 'deadline_exceeded' });

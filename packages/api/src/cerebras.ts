@@ -48,6 +48,7 @@ export async function infer(config: ProviderConfig, model: Model, messages: Mess
     metric.httpStatus = response.status;
     if (!response.ok) {
       await response.body?.cancel();
+      if (response.status === 401) throw new Fault('provider_authentication_failed', 502);
       if (response.status === 429) throw new Fault('rate_limited', 429);
       if (response.status === 529 || response.status === 503) throw new Fault('overloaded', 529);
       throw new Fault('provider_unavailable', 502);

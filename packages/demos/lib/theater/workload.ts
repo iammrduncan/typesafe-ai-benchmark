@@ -13,14 +13,15 @@ export function shuffledWorkload(scene: SceneId, random: () => number = Math.ran
   return items;
 }
 
-type MeasuredRequest = { data?: { usage: { input_tokens: number; output_tokens: number }; estimatedCostUsd: number | null } };
+type MeasuredRequest = { data?: { usage: { input_tokens: number; output_tokens: number } | null; estimatedCostUsd: number | null } };
 export function requestTotals(events: readonly MeasuredRequest[]) {
-  let input = 0, output = 0, cost = 0, measuredRequests = 0, pricedRequests = 0;
+  let input = 0, output = 0, cost = 0, measuredRequests = 0, pricedRequests = 0, unmeasuredRequests = 0;
   for (const { data } of events) {
     if (!data) continue;
-    input += data.usage.input_tokens; output += data.usage.output_tokens;
-    measuredRequests++;
+    if (data.usage) { input += data.usage.input_tokens; output += data.usage.output_tokens; measuredRequests++; }
+    else unmeasuredRequests++;
     if (data.estimatedCostUsd !== null) { cost += data.estimatedCostUsd; pricedRequests++; }
   }
-  return { input, output, cost, measuredRequests, pricedRequests, unpricedRequests: measuredRequests - pricedRequests, averageCostUsd: pricedRequests ? cost / pricedRequests : null };
+  return { input, output, cost, measuredRequests, unmeasuredRequests, pricedRequests,
+    unpricedRequests: measuredRequests + unmeasuredRequests - pricedRequests, averageCostUsd: pricedRequests ? cost / pricedRequests : null };
 }

@@ -100,11 +100,20 @@ npm run start:demos:live
 ```
 
 Open `http://127.0.0.1:3001`. Select a scene and press **Run demo** to launch both
-models together. **Stop both** cancels both lanes. Each panel has its own timing,
+models together. Each lane has its own model selector; Qwen and Jev are the defaults.
+Run `npm run setup:needle` with the Hugging Face CLI installed to add **Needle 3 · Local**,
+then restart the demo. Needle runs on this machine with no API fees; see
+[setup, validation and measurement differences](docs/needle.md).
+**Stop both** cancels both lanes. Each panel has its own timing,
 cost, result inspection, contract viewer and export. Export both before changing
 scenes. Live runs incur charges; use a bounded budget and retain partial/failed runs.
 The published session used a $2 estimated budget; the interactive UI has no
 cumulative spending cutoff.
+
+If a provider rejects its API key, the affected lane stops and names the setting
+to update. Replace that key in the root `.env`, restart `npm run start:demos:live`,
+and reload the page to refresh its session. An authentication failure is distinct
+from a timeout or rate limit; no automatic retries or replacement answers are used.
 
 For a local UI preview without inference, use `npm run dev`. Fixture mode uses
 synthetic answers/tokens and is labeled explicitly; its timings are not model

@@ -102,6 +102,20 @@ test('provider status mapping does not disclose raw errors or retry', async () =
     } finally { await h.close(); }
   }
 });
+test('upstream authentication failures are distinct from client authentication and remain sanitized', async () => {
+  const h = await harness(() => 401);
+  try {
+    for (const [url, payload] of [['/v1/systemone', noulRequest], ['/v1/chat/completions', chatBody()]] as const) {
+      const response = await h.app.inject({ method: 'POST', url, headers, payload });
+      assert.equal(response.statusCode, 502);
+      assert.equal(response.json().error.code, 'provider_authentication_failed');
+      assert.equal(response.json().error.message, 'Inference provider rejected its API key.');
+      assert.ok(!response.body.includes('SECRET'));
+      assert.ok(!response.body.includes('synthetic-provider-key'));
+    }
+    assert.equal(h.received.length, 2);
+  } finally { await h.close(); }
+});
 test('deadline and queue overload release resources for subsequent requests', async () => {
   let slow = true;
   const h = await harness(async () => { if (slow) await new Promise(resolve => setTimeout(resolve, 120)); return completion(); },

@@ -13,14 +13,17 @@ import { fixtureDispatch } from './traffic';
 import { theaterId, theaterFixtureAllowed, theaterFixture } from './theater/contracts';
 import { demoModel, defaultModel, models } from './models';
 import { jevPlan, requestJev, fixtureJev } from './jev';
+import { needlePlan, needleRevision } from './needle-plan';
+import { requestNeedle, type NeedleConfig } from './needle';
 
-export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: string; jevEndpoint?: string; stub?: boolean } = {}) {
+export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: string; jevEndpoint?: string; needle?: NeedleConfig; stub?: boolean } = {}) {
   const stub = options.stub ?? false;
-  if (!stub && !options.apiKey && !options.jevApiKey) throw new Error('CEREBRAS_API_KEY or JEV_KEY required');
-  const availableModels = demoModel.options.filter(model => stub || (model === 'jev-latest' ? options.jevApiKey : options.apiKey));
-  const initialModel = options.apiKey || stub ? defaultModel : 'jev-latest';
+  if (!stub && !options.apiKey && !options.jevApiKey && !options.needle) throw new Error('Configure a cloud provider or install Needle');
+  const availableModels = demoModel.options.filter(model => stub || (model === 'needle-3' ? options.needle : model === 'jev-latest' ? options.jevApiKey : options.apiKey));
+  const initialModel = options.apiKey || stub ? defaultModel : options.jevApiKey ? 'jev-latest' : 'needle-3';
   const token = randomBytes(24).toString('hex'), proxyKey = randomBytes(24).toString('hex');
   let calls = 0, active = 0;
+  const localControllers = new Set<AbortController>();
   const upstream = stub ? Fastify({ logger: false }) : undefined;
   let providerEndpoint: string | undefined;
   if (upstream) {
@@ -53,20 +56,37 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
     if (!parsed.success) return reply.code(400).send({ error: 'Invalid demo input.' });
     const input = parsed.data;
     const model = input.model ?? initialModel;
+    const failureMessage = (fault: Fault) => fault.code === 'provider_authentication_failed'
+      ? `${model === 'jev-latest' ? 'Jev' : 'Cerebras'} rejected its API key. Update ${model === 'jev-latest' ? 'JEV_KEY (or TYPESAFE_API_KEY)' : 'CEREBRAS_API_KEY'} in .env and restart the demo server. No action applied.`
+      : `${fault.message} No action applied.`;
     if (!availableModels.includes(model)) return reply.code(503).send({ error: 'Selected provider is not configured. No action applied.' });
     if (signal.aborted) return reply.code(504).send({ error: 'Request canceled. No action applied.' });
     if (stub && !(theaterId(input.id) ? theaterFixtureAllowed(input.id, input.text) : fixtureDispatch(input.text))) return reply.code(400).send({ error: 'Fixture mode uses fixed inputs. Start live mode to edit.' });
     const nativePlan = model === 'jev-latest' ? jevPlan(input) : undefined;
-    const inferenceModel = model === 'jev-latest' ? defaultModel : model;
+    const localPlan = model === 'needle-3' ? needlePlan(input) : undefined;
+    const inferenceModel = model === 'jev-latest' || model === 'needle-3' ? defaultModel : model;
     const planned = prepare({ ...input, model: inferenceModel });
     const data = chatRequest.parse(planned.payload);
     const plan = { messages: data.messages, jobs: [compileSchema(data.response_format.json_schema.schema).job] };
     // Validate every provider request before dispatch, without imposing a lifetime quota.
-    if (!nativePlan || stub) for (const job of plan.jobs) providerBody(inferenceModel, plan.messages, job);
+    if ((!nativePlan && !localPlan) || stub) for (const job of plan.jobs) providerBody(inferenceModel, plan.messages, job);
     if (active >= 5) return reply.code(429).send({ error: 'Too many requests in flight. Wait for an active request to finish.' });
     active++; calls += plan.jobs.length;
     const started = performance.now();
     try {
+      if (localPlan && !stub) {
+        if (!options.needle) throw new Fault('provider_unavailable', 502);
+        const abort = new AbortController();
+        localControllers.add(abort);
+        let output: Awaited<ReturnType<typeof requestNeedle>>;
+        try { output = await requestNeedle(input, localPlan, options.needle, AbortSignal.any([signal, abort.signal, AbortSignal.timeout(16_000)])); }
+        finally { localControllers.delete(abort); }
+        signal.throwIfAborted();
+        return { status: 200, body: { mode: 'live', model, providerModel: `needle-3@${needleRevision}`, ...output,
+          elapsedMs: performance.now() - started, usage: null, estimatedCostUsd: 0, calls, providerCalls: 1,
+          contract: localPlan, route: 'local:needle/complete', mappingVersion: 'needle-scenes-v1',
+          costNote: 'No API fees; local hardware and electricity excluded.', usageNote: 'Native runtime reports token rates, not token counts.' } };
+      }
       if (nativePlan && !stub) {
         if (!options.jevApiKey) throw new Fault('provider_unavailable', 502);
         const { result, native } = await requestJev(nativePlan, options.jevApiKey,
@@ -83,9 +103,9 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
       const data = parseJson(await response.text());
       const elapsedMs = performance.now() - started;
       if (!response.ok) {
-        const error = z.object({error:z.object({code:z.enum(['invalid_request','invalid_schema','rate_limited','overloaded','deadline_exceeded','provider_unavailable','invalid_provider_output','internal_error'])})}).safeParse(data);
+        const error = z.object({error:z.object({code:z.enum(['invalid_request','invalid_schema','rate_limited','overloaded','deadline_exceeded','provider_unavailable','provider_authentication_failed','invalid_provider_output','internal_error'])})}).safeParse(data);
         const code = error.success ? error.data.error.code : 'internal_error';
-        return reply.code(response.status).send({ error: `${new Fault(code,response.status).message} No action applied.`, code, elapsedMs, calls });
+        return reply.code(response.status).send({ error: failureMessage(new Fault(code,response.status)), code, elapsedMs, calls });
       }
       if (!record(data)) throw new Error('Invalid result');
       const actualModel = demoModel.parse(data.model);
@@ -94,6 +114,8 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
       const usage = { input_tokens: tokens.prompt_tokens, output_tokens: tokens.completion_tokens };
       const envelope = z.object({ choices: z.array(z.object({ message: z.object({ content: z.string() }) })).length(1) }).parse(data);
       const result = parseJson(envelope.choices[0]?.message.content ?? '');
+      if (localPlan) return { status: 200, body: { mode: 'fixture', model, result, decision: applyDecision(input, result), elapsedMs,
+        usage, estimatedCostUsd: 0, calls, providerCalls: 1, contract: localPlan, route: 'local:needle/complete', mappingVersion: 'needle-scenes-v1' } };
       if (nativePlan) {
         if (!record(result)) throw new Error('Invalid fixture');
         const { result: decoded, native } = fixtureJev(nativePlan, result);
@@ -108,9 +130,9 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
         contract: planned.payload, route: planned.route } };
     } catch (error) {
       const fault = signal.aborted ? new Fault('deadline_exceeded', 504) : error instanceof Fault ? error : new Fault('invalid_provider_output', 502);
-      return reply.code(fault.status).send({ error: `${fault.message} No action applied.`, code: fault.code, elapsedMs: performance.now() - started, calls });
+      return reply.code(fault.status).send({ error: failureMessage(fault), code: fault.code, elapsedMs: performance.now() - started, calls });
     }
     finally { active--; }
   };
-  return { config, run, async close() { await proxy?.close(); await upstream?.close(); } };
+  return { config, run, async close() { for (const abort of localControllers) abort.abort(); await proxy?.close(); await upstream?.close(); } };
 }

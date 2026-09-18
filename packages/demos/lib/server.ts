@@ -5,6 +5,7 @@ const globalState = globalThis as typeof globalThis & { decisionRuntime?: Return
 export function getRuntime() {
   const jevApiKey = process.env.TYPESAFE_API_KEY || process.env.JEV_KEY;
   globalState.decisionRuntime ??= createDemoRuntime({ stub: process.env.DEMO_MODE !== 'live',
+    ...(process.env.NEEDLE_BINARY && process.env.NEEDLE_WEIGHTS ? { needle: { executable: process.env.NEEDLE_BINARY, weights: process.env.NEEDLE_WEIGHTS } } : {}),
     ...(jevApiKey ? { jevApiKey } : {}),
     ...(process.env.CEREBRAS_API_KEY ? { apiKey: process.env.CEREBRAS_API_KEY } : {}) }).catch(error => {
       delete globalState.decisionRuntime;

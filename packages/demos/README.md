@@ -170,3 +170,15 @@ physics live in `lib/theater/driving.ts`. The navigation graph is in
 
 See [verification and design choices](../../docs/theater-verification.md) and
 [research notes](../../docs/showcase-research.md).
+# Model selection and local Needle
+
+Both comparison lanes have independent model selectors. Any available model can
+run on either side, including the same model twice. Controls lock during a run;
+changing a model clears that lane's previous results. Qwen and Jev remain defaults.
+
+From the repository root, `npm run setup:needle` downloads the pinned official
+Needle 3 native runtime and weights using the `hf` CLI. Restart the live demo to
+enable **Needle 3 · Local**. It needs no cloud key. Actual startup/inference time is
+included; zero API fees exclude local compute, and unreported token counts remain
+unknown. See [the adapter notes](../../docs/needle.md) for forced structured selection,
+validation, cancellation, setup and differences from the cloud models.

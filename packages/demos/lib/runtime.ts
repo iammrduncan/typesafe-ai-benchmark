@@ -15,6 +15,7 @@ import { demoModel, defaultModel, models } from './models';
 import { jevPlan, requestJev, fixtureJev } from './jev';
 import { needlePlan, needleRevision } from './needle-plan';
 import { requestNeedle, type NeedleConfig } from './needle';
+import { createNeedleRunner } from './needle-worker';
 
 export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: string; jevEndpoint?: string; needle?: NeedleConfig; stub?: boolean } = {}) {
   const stub = options.stub ?? false;
@@ -24,6 +25,7 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
   const token = randomBytes(24).toString('hex'), proxyKey = randomBytes(24).toString('hex');
   let calls = 0, active = 0;
   const localControllers = new Set<AbortController>();
+  const needleRunner = options.needle && !stub ? createNeedleRunner(options.needle) : undefined;
   const upstream = stub ? Fastify({ logger: false }) : undefined;
   let providerEndpoint: string | undefined;
   if (upstream) {
@@ -75,11 +77,11 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
     const started = performance.now();
     try {
       if (localPlan && !stub) {
-        if (!options.needle) throw new Fault('provider_unavailable', 502);
+        if (!needleRunner) throw new Fault('provider_unavailable', 502);
         const abort = new AbortController();
         localControllers.add(abort);
         let output: Awaited<ReturnType<typeof requestNeedle>>;
-        try { output = await requestNeedle(input, localPlan, options.needle, AbortSignal.any([signal, abort.signal, AbortSignal.timeout(16_000)])); }
+        try { output = await needleRunner.request(input, localPlan, AbortSignal.any([signal, abort.signal, AbortSignal.timeout(16_000)])); }
         finally { localControllers.delete(abort); }
         signal.throwIfAborted();
         return { status: 200, body: { mode: 'live', model, providerModel: `needle-3@${needleRevision}`, ...output,
@@ -134,5 +136,5 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
     }
     finally { active--; }
   };
-  return { config, run, async close() { for (const abort of localControllers) abort.abort(); await proxy?.close(); await upstream?.close(); } };
+  return { config, run, async close() { for (const abort of localControllers) abort.abort(); await needleRunner?.close(); await proxy?.close(); await upstream?.close(); } };
 }

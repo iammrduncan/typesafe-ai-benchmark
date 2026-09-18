@@ -54,23 +54,23 @@ Static scenes used two concurrent requests per model; stateful scenes used one.
 
 | Measurement | Qwen 3.8 27B · Cerebras | Jev · TypeSafe | Needle 3 · local¹ |
 | --- | ---: | ---: | ---: |
-| Validated / dispatched | 475 / 476 | 479 / 480 | 327 / 442 |
-| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 | 114 / 1 |
-| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms | 403 / 867 / 919 ms |
+| Validated / dispatched | 475 / 476 | 479 / 480 | 327 / 445 |
+| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 | 117 / 1 |
+| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms | 225 / 724 / 791 ms |
 | Input / output tokens | 305,915 / 5,185 | 297,984 / 43,836 | Unavailable |
 | Known estimated API cost | $0.310581 | $0.011919 | $0² |
-| Sum of scene durations | 70.02 s | 55.54 s | 132.03 s |
+| Sum of scene durations | 70.02 s | 55.54 s | 94.23 s |
 
 ¹ Needle measured separately **2026-09-18 UTC**, directly through the demo runtime
 on an Apple M4 Pro; Qwen/Jev measured in the browser on September 17. Same contracts,
 static input order and concurrency, but no browser/HTTP overhead or competing lane
 for Needle. This is **not a controlled speed ranking**.
 ² Zero API fees excludes local hardware/electricity. Needle's median native decode
-rate was **846 tok/s**, distinct from its **403 ms** median successful request.
-[Needle raw results, failures and reproduction](docs/benchmarks/needle/README.md).
+rate was **864 tok/s**, distinct from its **225 ms** median successful request.
+[Needle reset-worker raw results and baseline](docs/benchmarks/needle-warm-2026-09-18/README.md).
 
-Latency measures successful browser requests, including local handling and
-validation. Scene durations exclude operator gaps; the two columns overlap in
+Qwen/Jev latency measures successful browser requests; Needle measures direct
+demo-runtime completion without HTTP. Scene durations exclude operator gaps; the two cloud columns overlap in
 real time. Driving stops at ten seconds and cancels its outstanding request.
 Unknown canceled-call usage is excluded from estimated cost.
 

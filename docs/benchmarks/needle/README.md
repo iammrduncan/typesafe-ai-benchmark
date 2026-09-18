@@ -1,5 +1,8 @@
 # Needle 3 local benchmark
 
+This is the original fresh-process baseline. The [reset-worker rerun](../needle-warm-2026-09-18/README.md)
+preserves a separate raw export and improved completion latency without improving judgment quality.
+
 Measured **2026-09-18 UTC** on Apple M4 Pro (14 cores, 24 GiB RAM), Node 22.15.0.
 This is a separate direct-runtime run, not the historical paired Qwen/Jev browser run.
 It uses the demo's actual Needle adapter, strict validation, shared synthetic workloads
@@ -46,7 +49,15 @@ collision physics, **not successful model driving**. Home returned well-typed ou
 for all 24 commands but none matched every expected field. Full expected/actual
 mismatches are retained in [summary.json](summary.json). Type validity is not quality.
 
-## Method and reproduction
+## Method and provenance
+
+These commands describe the original run from its recorded source state at commit
+`dc2a7d720f64f02c940b214f0c15bbe1bf2f47fb`, with exact source hashes in
+[environment.json](environment.json). Run that source in a separate checkout to
+repeat the fresh-process baseline. **The current checkout's benchmark script uses
+reset workers**, so running it here reproduces the [new method](../needle-warm-2026-09-18/README.md),
+not this baseline. The original runner gained only an ESLint globals comment after
+measurement; its post-comment hash is also recorded in the environment file.
 
 ```sh
 npm ci

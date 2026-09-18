@@ -178,7 +178,8 @@ changing a model clears that lane's previous results. Qwen and Jev remain defaul
 
 From the repository root, `npm run setup:needle` downloads the pinned official
 Needle 3 native runtime and weights using the `hf` CLI. Restart the live demo to
-enable **Needle 3 · Local**. It needs no cloud key. Actual startup/inference time is
+enable **Needle 3 · Local**. Static inputs use up to two reset native workers;
+navigation retains a fresh process because its schema changes by junction. It needs no cloud key. Actual startup/inference time is
 included; zero API fees exclude local compute, and unreported token counts remain
 unknown. See [the adapter notes](../../docs/needle.md) for forced structured selection,
 validation, cancellation, setup and differences from the cloud models.

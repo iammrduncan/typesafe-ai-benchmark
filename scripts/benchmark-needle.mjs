@@ -22,9 +22,10 @@ mkdirSync(directory, { recursive: false });
 const needle = installedNeedle();
 assert.ok(needle, 'Run npm run setup:needle first');
 const hash = path => createHash('sha256').update(readFileSync(path)).digest('hex');
-const sourceFiles = execFileSync('git', ['ls-files', 'packages/demos/lib', 'packages/demos/needle-release.json', 'scripts/benchmark-needle.mjs', 'package-lock.json'], {encoding:'utf8'}).trim().split('\n');
-sourceFiles.push('scripts/benchmark-needle.mjs');
-writeFileSync(`${directory}/environment.json`, JSON.stringify({ measuredAtUtc:new Date().toISOString(),baseCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),environment:{os:os.release(),platform:process.platform,architecture:process.arch,cpu:os.cpus()[0].model,cores:os.cpus().length,memoryBytes:os.totalmem(),node:process.version},configuration:{model:'needle-3',warmupRequests:0,automaticRetries:0,staticConcurrency:2,statefulConcurrency:1,depth:20,maxNewTokens:512,processPerRequest:true,browser:false,http:false},binarySha256:hash(needle.executable),weightsSha256:hash(needle.weights),sourceSha256:Object.fromEntries(sourceFiles.map(p=>[p,hash(p)]))},null,2)+'\n');
+const sourceFiles = new Set(execFileSync('git', ['ls-files', 'packages/demos/lib', 'packages/demos/needle-release.json', 'scripts/benchmark-needle.mjs', 'package-lock.json'], {encoding:'utf8'}).trim().split('\n'));
+sourceFiles.add('scripts/benchmark-needle.mjs');
+sourceFiles.add('packages/demos/lib/needle-worker.ts');
+writeFileSync(`${directory}/environment.json`, JSON.stringify({ measuredAtUtc:new Date().toISOString(),baseCommit:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),environment:{os:os.release(),platform:process.platform,architecture:process.arch,cpu:os.cpus()[0].model,cores:os.cpus().length,memoryBytes:os.totalmem(),node:process.version},configuration:{model:'needle-3',warmupRequests:0,automaticRetries:0,staticConcurrency:2,statefulConcurrency:1,depth:20,maxNewTokens:512,staticWorkersPerSchema:2,workerIdleMs:5000,navigationProcessPerRequest:true,browser:false,http:false},binarySha256:hash(needle.executable),weightsSha256:hash(needle.weights),sourceSha256:Object.fromEntries([...sourceFiles].map(p=>[p,hash(p)]))},null,2)+'\n');
 const runtime = await createDemoRuntime({needle});
 let nextId=1;
 try {
@@ -66,7 +67,7 @@ try {
       await Promise.all([worker(),worker()]);
     }
     const run={scene,model:'needle-3',elapsedMs:performance.now()-begin,concurrency:['navigate','drive','home'].includes(scene)?1:2,events,...(car?{car}:{}),requestOrder:events.map(e=>e.item.id),totals:requestTotals(events)};
-    writeFileSync(`${directory}/${scene}-needle.json`,JSON.stringify({generatedAt:new Date().toISOString(),model:'needle-3',mode:'live',datasetVersion:3,mappingVersion:'needle-scenes-v1',measurement:'Direct demo runtime; no browser/HTTP. Fresh native process per request. No warmups, retries or fallback.',runs:[run]},null,2)+'\n');
+    writeFileSync(`${directory}/${scene}-needle.json`,JSON.stringify({generatedAt:new Date().toISOString(),model:'needle-3',mode:'live',datasetVersion:3,mappingVersion:'needle-scenes-v1',measurement:'Direct demo runtime; no browser/HTTP. Two reset workers for static schemas, fresh native process for navigation. No warmups, retries or fallback.',runs:[run]},null,2)+'\n');
     process.stdout.write(`${scene}: ${events.filter(e=>e.status==='validated').length}/${events.length} validated, ${(run.elapsedMs/1000).toFixed(2)}s\n`);
   }
 } finally {await runtime.close();}

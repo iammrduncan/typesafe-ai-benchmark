@@ -64,18 +64,31 @@ test('local usage stays unknown while known zero API fees remain priced', () => 
 
 test('native process boundary is isolated, cancellable and sanitized; no cloud key is needed', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'needle-test-'));
-  const executable = path.join(dir, 'fake-needle.cjs'), marker = path.join(dir, 'started');
+  const executable = path.join(dir, 'fake-needle.cjs'), marker = path.join(dir, 'started'), served = path.join(dir, 'served');
   // A synthetic upstream process, never the downloaded model or a paid service.
   await writeFile(executable, `#!${process.execPath}
 const fs=require('node:fs');
+const http=require('node:http');
 const args=process.argv.slice(2), get=flag=>args[args.indexOf(flag)+1];
 const tools=JSON.parse(fs.readFileSync(get('--tools'),'utf8'));
 if(process.env.CEREBRAS_API_KEY||process.env.JEV_KEY)process.exit(4);
 if(!args.includes('--forced')||!args.includes('--fail-input-overflow'))process.exit(5);
-if(get('--model')==='slow'){fs.writeFileSync(${JSON.stringify(marker)},String(process.pid));setTimeout(()=>{},10000);}
+const good=()=>JSON.stringify({type:'call',success:true,error:null,function_calls:[{name:tools[0].name,arguments:{decision:'allow'}}],reasoning:'PRIVATE',prefill_tps:2000,decode_tps:800,peak_ram_mb:96});
+if(args.includes('--serve')){
+  let reset=false;
+  http.createServer((req,res)=>{
+    if(req.url==='/reset'){reset=true;res.end('reset');return;}
+    if(req.url!=='/complete'||!reset){res.statusCode=409;res.end('Not reset');return;}
+    reset=false;
+    if(get('--model')==='slow'){fs.writeFileSync(${JSON.stringify(marker)},String(process.pid));setTimeout(()=>res.end(good()),10000);}
+    else{fs.appendFileSync(${JSON.stringify(served)},String(process.pid)+'\\n');res.setHeader('content-type','application/json');
+      if(get('--model')==='busy')setTimeout(()=>res.end(good()),250);else res.end(good());}
+  }).listen(Number(get('--port')),'127.0.0.1');
+}
+else if(get('--model')==='slow'){fs.writeFileSync(${JSON.stringify(marker)},String(process.pid));setTimeout(()=>{},10000);}
 else if(get('--model')==='bad'){console.log('PRIVATE_INVALID_OUTPUT');}
 else if(get('--model')==='fail'){console.error('PRIVATE_FAILURE');process.exit(1);}
-else console.log(JSON.stringify({type:'call',success:true,error:null,function_calls:[{name:tools[0].name,arguments:{decision:'allow'}}],reasoning:'PRIVATE',prefill_tps:2000,decode_tps:800,peak_ram_mb:96}));
+else console.log(good());
 `, { mode: 0o700 });
   const runtime = await createDemoRuntime({ needle: { executable, weights: 'good' } });
   const i = input('screen'), plan = needlePlan(i);
@@ -87,6 +100,34 @@ else console.log(JSON.stringify({type:'call',success:true,error:null,function_ca
     const result = z.object({ mode: z.literal('live'), usage: z.null(), estimatedCostUsd: z.literal(0),
       decision: z.object({ decision: z.literal('allow') }), elapsedMs: z.number().positive() }).parse(good.body);
     assert.equal(result.usage, null); assert.ok(!JSON.stringify(good).includes('PRIVATE'));
+    assert.equal((await runtime.run(i, new AbortController().signal)).status, 200);
+    const servedPids = (await readFile(served, 'utf8')).trim().split('\n');
+    assert.equal(servedPids.length, 2); assert.equal(servedPids[0], servedPids[1], 'Independent calls reuse one reset worker');
+    const busy = await createDemoRuntime({ needle: { executable, weights: 'busy' } });
+    try {
+      await rm(served);
+      const first = busy.run(i, new AbortController().signal);
+      const second = busy.run(i, new AbortController().signal);
+      const queuedAbort = new AbortController();
+      const queued = busy.run(i, queuedAbort.signal);
+      queuedAbort.abort();
+      assert.equal((await queued).status, 504);
+      assert.deepEqual([(await first).status, (await second).status], [200, 200]);
+      assert.equal((await readFile(served, 'utf8')).trim().split('\n').length, 2, 'Canceled queued work never reaches Needle');
+      const activeAbort = new AbortController();
+      const active = busy.run(i, activeAbort.signal);
+      let activePid = 0;
+      for (let n = 0; n < 100 && !activePid; n++) {
+        const lines = (await readFile(served, 'utf8')).trim().split('\n');
+        if (lines.length === 3) activePid = Number(lines[2]);
+        else await delay(5);
+      }
+      assert.ok(activePid);
+      activeAbort.abort();
+      assert.equal((await active).status, 504);
+      assert.throws(() => process.kill(activePid, 0), 'Canceled active inference kills its worker');
+      assert.equal((await busy.run(i, new AbortController().signal)).status, 200, 'A killed worker is replaced');
+    } finally { await busy.close(); }
     for (const [weights, code] of [['bad', 'invalid_provider_output'], ['fail', 'provider_unavailable']] as const) {
       await assert.rejects(requestNeedle(i, plan, { executable, weights }, new AbortController().signal), { code });
     }

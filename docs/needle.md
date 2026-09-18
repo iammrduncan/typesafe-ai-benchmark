@@ -19,7 +19,7 @@ Model files and generated verification results must never be committed.
 
 ## Mapping and measurement
 
-Sources checked 2026-09-17:
+Sources checked 2026-09-17 (native server/localhost guide checked 2026-09-18):
 [native CLI](https://cactuscompute.com/blog/needle-supported-devices),
 [extraction](https://cactuscompute.com/blog/structured-extraction-with-needle),
 [official model](https://huggingface.co/Cactus-Compute/needle3).
@@ -40,8 +40,8 @@ Small smoke checks returned valid results for five of seven scenes; guardrails a
 scoring produced conflicting calls and were rejected. Valid responses also showed
 judgment errors. These observations are not an accuracy benchmark.
 
-Latency includes temporary schema preparation, native process startup, model load,
-inference, validation and cleanup. The engine reports prefill/decode rates and peak
+Latency includes queueing, schema preparation, any cold native process startup/model
+load, inference and validation; warm requests reuse loaded workers. The engine reports prefill/decode rates and peak
 RAM; these are exported separately as `nativeMetrics`, not substituted for wall
 time. It does not report token counts: `usage` is null and the UI says “Not reported”.
 Per-request engine metrics appear inside the fixed-height output inspector so
@@ -51,14 +51,25 @@ remains explicitly labeled and does not invoke Needle.
 
 ## Execution choice
 
-We considered persistent HTTP workers and one native process per request. Persistent
-workers can reduce startup latency but require per-toolset lifecycle, conversation
-reset, schema changes and a separate cancellation mechanism for the process-global
-engine. One-shot native execution is smaller, isolates concurrent requests, and
-lets cancellation kill actual inference without affecting another lane. We chose
-one-shot execution for this demo, accepting measurable startup overhead. The shared
-five-request admission bound and 16-second deadline still apply. This can be replaced
-with a measured worker implementation later without changing scene contracts.
+The original adapter chose one native process per request for straightforward
+isolation and cancellation. The [same-input rerun](benchmarks/needle-warm-2026-09-18/README.md)
+measured enough overhead on static scenes to justify a bounded reset-worker path:
+at most two workers per unchanged tool schema, one request at a time per worker,
+with `POST /reset` before each independent completion. The pinned native server
+binds localhost, and workers expire after five idle seconds. Canceling a request
+kills and discards its worker; queued cancellations never reach the engine.
+The shared five-request admission bound and 16-second deadline include queue wait.
+
+An alternative was simply raising caller concurrency from two to four while keeping
+fresh processes. On representative inputs that improved throughput much less and
+increased individual/tail latency under CPU contention. Warm workers cost more
+process lifecycle code and briefly retain model RAM between requests; the small
+two-worker, idle-expiring pool trades that complexity for a measured 28.6% reduction
+in the seven-scene duration. Navigation still uses one-shot processes because
+legal-move schemas vary by junction. A changed schema for another scene falls back
+to one-shot execution rather than reusing a worker with stale tools. Neither path
+retries, repairs, or accepts invalid calls. This is concurrency across independent
+inputs, not native batch inference or a TTFT measurement.
 
 ## Latency and routing investigation — 2026-09-17
 
@@ -78,8 +89,9 @@ rankings. Only synthetic local inputs were used; no paid provider was called.
 Fresh timings include process startup and inference. Reused timings include a
 conversation reset and local HTTP request, but exclude worker startup; startup was
 measured separately at 47.9 ms for weather and 81.0 ms for routing. They must not be
-presented as equivalent cold measurements. The reused process is an investigation
-only; the live adapter still uses one process per request. Four simultaneous graph
+presented as equivalent cold measurements. The reused process was an investigation
+only at that time; the static adapter adopted reset workers on September 18.
+Four simultaneous graph
 calls are a contention stress check: live navigation is sequential per lane, so two
 Needle routing lanes normally produce at most two simultaneous graph calls.
 
@@ -126,7 +138,7 @@ is a separately labeled hybrid: Needle extracts the destination and a convention
 planner computes the route. That changes what is being evaluated and must not replace
 model-directed routing silently.
 
-Raw synthetic responses, experiment scripts and summaries are preserved locally in
+Raw synthetic responses, experiment scripts and summaries from this earlier diagnosis are preserved locally in
 ignored `.artifacts/needle-diagnosis/`: `probe.ts`/`probe.json`, `warm.ts`/`warm.json`,
 `variants.ts`/`variants.json`, `live-route.json` and `summary.json`. Run the scripts
 from the repository root with `node --import tsx .artifacts/needle-diagnosis/<name>.ts`.
@@ -154,8 +166,10 @@ not treating a displayed animation as evidence that Needle chose each turn.
 
 ## Published seven-scene benchmark
 
-The [2026-09-18 local run](benchmarks/needle/README.md) includes all seven shared
-workloads, unmodified per-request results, failures, fixture mismatches, engine
-rates, environment hashes and reproduction commands. It validated 327/442 requests;
-median successful direct-runtime latency was 403 ms. This is a separate measurement
-from the historical Qwen/Jev browser run, not a simultaneous latency comparison.
+The original [one-shot local run](benchmarks/needle/README.md) and the
+[reset-worker rerun](benchmarks/needle-warm-2026-09-18/README.md) include all seven
+shared workloads, unmodified per-request results, failures, fixture mismatches,
+engine rates, environment hashes and reproduction commands. The final rerun
+validated 327/445 requests with a 225 ms median successful direct-runtime latency;
+the baseline validated 327/442 at 403 ms. Both are separate from the historical
+Qwen/Jev browser run, not simultaneous latency comparisons.

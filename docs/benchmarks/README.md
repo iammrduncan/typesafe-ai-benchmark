@@ -1,4 +1,4 @@
-# TypeSafe AI Benchmark: Qwen, Jev and local Needle 3
+# TypeSafe AI Benchmark: Qwen, Jev and local models
 
 This report compares provider-native LLM structured output from **Qwen 3.8 27B on
 Cerebras** with **TypeSafe Jev’s native judgment API**. Qwen is the chosen fast LLM
@@ -29,6 +29,21 @@ for Needle. This is **not a controlled speed ranking**.
 ² Zero API fees excludes local hardware/electricity. Needle's median native decode
 rate was **864 tok/s**, distinct from its **225 ms** median successful request.
 [Needle reset-worker raw results and one-shot baseline](needle-warm-2026-09-18/README.md).
+
+### Qwen 2.5 1.5B RLCD local follow-up
+
+A separate direct-runtime run on the same M4 Pro measured the pinned local RLCD
+adapter on the same contracts and recorded input order: **477/478** structurally
+validated, **213 / 692 / 1,087 ms** successful-request p50/p95/p99, and **78.76 s**
+across the seven scenes. Its internal engine p50 was **125 ms**; two static-scene
+callers queue through one serialized MLX worker, so this does not demonstrate
+parallel input batching. The engine batches fields within each request.
+
+Judgment quality was poor despite valid shapes: 0/100 exact ticket matches, 50/100
+guardrail matches, 50/100 approval matches, 3/100 scoring matches and 0/24 home
+matches. Routing looped without reaching the target. Integer collision paths were
+used in 124 requests and return synthetic scores, so those values are not treated as
+calibrated probabilities. [Method, raw results and all mismatches](rlcd-2026-09-19/README.md).
 
 No Qwen/Jev HTTP failures or rate limits occurred. Each driving lane canceled one in-flight
 request at its ten-second deadline. Cost excludes unknown usage for those calls.

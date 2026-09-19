@@ -7,7 +7,7 @@ import { scenes } from '../packages/demos/lib/theater/data.ts';
 import { percentiles } from '../packages/api/src/metrics.ts';
 import { quality } from './benchmark-quality.mjs';
 
-const directory = process.argv[2] ?? 'docs/benchmarks/rlcd-2026-09-18';
+const directory = process.argv[2] ?? 'docs/benchmarks/rlcd-2026-09-19';
 const metric = z.number().finite().nonnegative();
 const eventSchema = z.object({ id: metric.int(), status: z.enum(['validated', 'failed', 'canceled']),
   elapsedMs: metric, sentAt: z.iso.datetime(), httpStatus: metric.int(),

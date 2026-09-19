@@ -39,6 +39,8 @@ test('Needle rejects ambiguous, suppressed, prose and invalid decisions without 
 
 test('all Needle scene contracts use the native plan and offline fixtures retain their model identity', async () => {
   const runtime = await createDemoRuntime({ stub: true });
+  const caps: Record<SceneId, number> = { dispatch: 512, navigate: 24, drive: 32,
+    screen: 24, approve: 24, judge: 32, home: 160 };
   try {
     assert.ok(runtime.config().availableModels.includes('needle-3'));
     for (const id of ['dispatch', 'navigate', 'drive', 'screen', 'approve', 'judge', 'home'] satisfies SceneId[]) {
@@ -46,6 +48,7 @@ test('all Needle scene contracts use the native plan and offline fixtures retain
       const snapshot = contractSnapshot({ scene: id, model: i.model, context: JSON.parse(i.text) });
       assert.deepEqual(snapshot.request, plan);
       assert.equal(readNeedleContract(snapshot.request)?.forced, true);
+      assert.equal(readNeedleContract(snapshot.request)?.max_new_tokens, caps[id]);
       assert.ok(readContract(snapshot.request)?.fields.length);
       const r = await runtime.run(i, new AbortController().signal);
       assert.equal(r.status, 200, JSON.stringify(r.body));

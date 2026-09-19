@@ -73,7 +73,7 @@ export function readContract(request: unknown) {
 export function readNeedleContract(request: unknown) {
   const parsed = z.object({ model: z.literal('needle-3'), forced: z.literal(true),
     tools: z.array(z.object({ name: z.string(), description: z.string(), parameters: z.unknown() })).length(1),
-    revision: z.string(), depth: z.literal(20), max_new_tokens: z.literal(512), fail_input_overflow: z.literal(true),
+    revision: z.string(), depth: z.literal(20), max_new_tokens: z.number().int().positive(), fail_input_overflow: z.literal(true),
   }).safeParse(request);
   return parsed.success ? parsed.data : undefined;
 }

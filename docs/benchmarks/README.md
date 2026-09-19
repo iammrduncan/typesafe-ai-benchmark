@@ -15,20 +15,20 @@ the figures below come from the newly captured JSON exports.
 
 | Measurement | Qwen 3.8 27B · Cerebras | Jev · TypeSafe | Needle 3 · local¹ |
 | --- | ---: | ---: | ---: |
-| Validated / dispatched | 475 / 476 | 479 / 480 | 327 / 445 |
-| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 | 117 / 1 |
-| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms | 225 / 724 / 791 ms |
+| Validated / dispatched | 475 / 476 | 479 / 480 | 467 / 483 |
+| Failed / canceled at driving deadline | 0 / 1 | 0 / 1 | 15 / 1 |
+| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms | 174 / 479 / 1,168 ms |
 | Input / output tokens | 305,915 / 5,185 | 297,984 / 43,836 | Unavailable |
 | Known estimated API cost | $0.310581 | $0.011919 | $0² |
-| Sum of scene durations | 70.02 s | 55.54 s | 94.23 s |
+| Sum of scene durations | 70.02 s | 55.54 s | 59.79 s |
 
-¹ Needle measured separately **2026-09-18 UTC**, directly through the demo runtime
+¹ Needle measured separately **2026-09-19 UTC**, directly through the demo runtime
 on an Apple M4 Pro; Qwen/Jev measured in the browser on September 17. Same contracts,
 static input order and concurrency, but no browser/HTTP overhead or competing lane
 for Needle. This is **not a controlled speed ranking**.
 ² Zero API fees excludes local hardware/electricity. Needle's median native decode
-rate was **864 tok/s**, distinct from its **225 ms** median successful request.
-[Needle reset-worker raw results and one-shot baseline](needle-warm-2026-09-18/README.md).
+rate was **887 tok/s**, distinct from its **174 ms** median successful request.
+[Needle mapping-v2 results and prior baselines](needle-capped-2026-09-19/README.md).
 
 ### Qwen 2.5 1.5B RLCD local follow-up
 
@@ -68,14 +68,16 @@ percentiles use nearest rank and exclude cancellations. No decode-speed claim is
 | Exact fixture agreement / dispatched | Qwen | Jev | Needle 3 |
 | --- | ---: | ---: | ---: |
 | Tickets | 75/100 | 75/100 | 0/100 |
-| Guardrails | 100/100 | 100/100 | 43/100 |
+| Guardrails | 100/100 | 100/100 | 70/100 |
 | Approvals | 100/100 | 95/100 | 45/100 |
-| Scoring | 93/100 | 100/100 | 1/100 |
+| Scoring | 93/100 | 100/100 | 0/100 |
 | Home | 24/24 | 15/24 | 0/24 |
 
-Needle stopped routing after one valid hop and an invalid response. Driving produced
-no valid control outputs; its 34.6 m came from initial coasting/physics. Invalid
-outputs count as non-matches above; all mismatches remain in the raw results.
+Needle reached junction 4 from 20 in eight valid hops. Driving produced 50 valid
+controls, covered 13.96 m and had one collision. Its schema-sized caps fixed
+conflicting-call failures and wasted generation, but the exact-match table shows
+that type validity did not fix every judgment. Invalid outputs count as non-matches;
+all mismatches remain in the raw results.
 
 Routing reached junction 4 from 20 in eight hops on each side, following different
 paths. Driving covered **94.58 m (Qwen)** and **84.25 m (Jev)**, with one collision

@@ -29,7 +29,7 @@ await writeFile(toolsPath, JSON.stringify(plan.tools));
 const environment = { PATH: process.env.PATH ?? '', NEEDLE_TELEMETRY: '0', DO_NOT_TRACK: '1' };
 const execute = promisify(execFile);
 const results = [];
-const common = ['--model', needle.weights, '--tools', toolsPath, '--depth', '20', '--max', '512', '--forced', '--fail-input-overflow'];
+const common = ['--model', needle.weights, '--tools', toolsPath, '--depth', '20', '--max', String(plan.max_new_tokens), '--forced', '--fail-input-overflow'];
 
 async function availablePort() {
   const server = createServer();

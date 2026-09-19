@@ -19,15 +19,17 @@ Model files and generated verification results must never be committed.
 
 ## Mapping and measurement
 
-Sources checked 2026-09-17 (native server/localhost guide checked 2026-09-18):
+Sources checked through 2026-09-19:
 [native CLI](https://cactuscompute.com/blog/needle-supported-devices),
+[tool design](https://cactuscompute.com/blog/designing-tools-for-needle),
 [extraction](https://cactuscompute.com/blog/structured-extraction-with-needle),
 [official model](https://huggingface.co/Cactus-Compute/needle3).
 
 Each request exposes one record-only tool whose parameters use the existing scene
 schema and policy descriptions. It is never executed. The CLI uses `--forced` to
-require a structured selection, `--depth 20`, `--max 512`, and
-`--fail-input-overflow` to reject oversized context instead of silently trimming it.
+require a structured selection, `--depth 20`, schema-sized response caps from 24 to
+512 tokens, and `--fail-input-overflow` to reject oversized context instead of
+silently trimming it.
 The contract viewer records the actual input, schema, flags, and revision.
 This is a deliberate adapter mapping, not wire or judgment parity with Cerebras
 or Jev. Needle's native engine may perform its own deterministic grounding/repair;
@@ -48,6 +50,36 @@ Per-request engine metrics appear inside the fixed-height output inspector so
 incoming successes and failures do not resize the comparison lanes.
 Cost is zero API fees only; local hardware/electricity are excluded. Fixture mode
 remains explicitly labeled and does not invoke Needle.
+
+## Response-cap correction — 2026-09-19
+
+The v1 adapter copied Needle's 512-token default to every scene. Direct raw probes
+showed that the model often produced one complete call, kept generating, and added a
+second conflicting call. The public validator correctly rejected the ambiguity, but
+the oversized budget both increased latency and turned usable first decisions into
+failures. Taking the first call would hide a real conflict; changing worker count or
+model depth did not address it.
+
+Mapping v2 instead budgets enough native output for one complete scene schema:
+24 tokens for routing, guardrails and approvals; 32 for driving and scoring; 160 for
+Home. Dispatch retains 512 because its four-field call lost valid outputs at smaller
+measured caps. The strict exactly-one-call boundary is unchanged.
+
+On the full direct-runtime replay, guardrails changed from 78/100 validated in
+8.46 seconds to 100/100 in 3.10 seconds, with exact fixture agreement improving from
+43 to 70. Approvals changed from 91/100 in 19.54 seconds to 100/100 in 3.94 seconds;
+scoring changed from 48/100 in 30.35 seconds to 100/100 in 10.71 seconds. Routing
+completed all eight hops to the target instead of failing on hop two, and driving
+produced 50 valid controls instead of none. Across the seven scene durations,
+successful throughput rose from 3.47 to 7.81 decisions/s.
+
+This fixes output validity and wasted generation, not every judgment. Tickets and
+Home still had zero exact fixture matches, approvals stayed at 45/100, and scoring
+fell from one exact match to zero. The official guidance describes Needle as strongest
+at narrowly named tool selection and grounded argument extraction; these shared tasks
+also require abstract judgment, planning and control. The
+[mapping-v2 report](benchmarks/needle-capped-2026-09-19/README.md) retains all failures
+and mismatches.
 
 ## Execution choice
 
@@ -110,7 +142,7 @@ bottleneck for this prompt. A compact representation preserving all open roads a
 costs cut the initial prompt to 750 bytes and the first request to 567.5 ms (one
 sample), but did not solve the decision failures.
 
-### Reproduced routing failure
+### Historical routing failure at the 512-token v1 cap
 
 The default route starts at junction 20 and targets junction 4. The first answer is
 `north`, reaching 15. For state `{position:15,target:4,visited:[20,15]}`, Needle emits
@@ -127,7 +159,7 @@ returned conflicting `east` and `west` calls on its second hop. These candidates
 were not applied to the live demo. Silently taking the first call, replacing it
 with a pathfinder, or retrying until success would conceal the failure.
 
-### Next implementation choices
+### Earlier implementation choices
 
 For latency, a reusable worker with explicit reset and cancellation is appropriate
 for repeated short commands; a smaller equivalent graph representation targets the
@@ -166,10 +198,12 @@ not treating a displayed animation as evidence that Needle chose each turn.
 
 ## Published seven-scene benchmark
 
-The original [one-shot local run](benchmarks/needle/README.md) and the
-[reset-worker rerun](benchmarks/needle-warm-2026-09-18/README.md) include all seven
+The original [one-shot local run](benchmarks/needle/README.md), the
+[reset-worker rerun](benchmarks/needle-warm-2026-09-18/README.md), and the current
+[schema-capped rerun](benchmarks/needle-capped-2026-09-19/README.md) include all seven
 shared workloads, unmodified per-request results, failures, fixture mismatches,
 engine rates, environment hashes and reproduction commands. The final rerun
-validated 327/445 requests with a 225 ms median successful direct-runtime latency;
-the baseline validated 327/442 at 403 ms. Both are separate from the historical
-Qwen/Jev browser run, not simultaneous latency comparisons.
+validated 467/483 requests with a 174 ms median successful direct-runtime latency;
+the reset-worker v1 run validated 327/445 at 225 ms and the one-shot baseline
+validated 327/442 at 403 ms. All are separate from the historical Qwen/Jev browser
+run, not simultaneous latency comparisons.

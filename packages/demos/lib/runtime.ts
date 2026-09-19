@@ -13,7 +13,7 @@ import { fixtureDispatch } from './traffic';
 import { theaterId, theaterFixtureAllowed, theaterFixture } from './theater/contracts';
 import { demoModel, defaultModel, models } from './models';
 import { jevPlan, requestJev, fixtureJev } from './jev';
-import { needlePlan, needleRevision } from './needle-plan';
+import { needleMappingVersion, needlePlan, needleRevision } from './needle-plan';
 import { requestNeedle, type NeedleConfig } from './needle';
 import { createNeedleRunner } from './needle-worker';
 import { rlcdPlan } from './rlcd-plan';
@@ -97,7 +97,7 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
         signal.throwIfAborted();
         return { status: 200, body: { mode: 'live', model, providerModel: `needle-3@${needleRevision}`, ...output,
           elapsedMs: performance.now() - started, usage: null, estimatedCostUsd: 0, calls, providerCalls: 1,
-          contract: localPlan, route: 'local:needle/complete', mappingVersion: 'needle-scenes-v1',
+          contract: localPlan, route: 'local:needle/complete', mappingVersion: needleMappingVersion,
           costNote: 'No API fees; local hardware and electricity excluded.', usageNote: 'Native runtime reports token rates, not token counts.' } };
       }
       if (parallelPlan && !stub) {
@@ -144,7 +144,7 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
       const envelope = z.object({ choices: z.array(z.object({ message: z.object({ content: z.string() }) })).length(1) }).parse(data);
       const result = parseJson(envelope.choices[0]?.message.content ?? '');
       if (localPlan) return { status: 200, body: { mode: 'fixture', model, result, decision: applyDecision(input, result), elapsedMs,
-        usage, estimatedCostUsd: 0, calls, providerCalls: 1, contract: localPlan, route: 'local:needle/complete', mappingVersion: 'needle-scenes-v1' } };
+        usage, estimatedCostUsd: 0, calls, providerCalls: 1, contract: localPlan, route: 'local:needle/complete', mappingVersion: needleMappingVersion } };
       if (parallelPlan) return { status: 200, body: { mode: 'fixture', model, result,
         decision: applyDecision(input, result), elapsedMs, usage, estimatedCostUsd: 0, calls,
         providerCalls: 1, contract: parallelPlan, route: 'local:rlcd/parallel', mappingVersion: 'rlcd-scenes-v2' } };

@@ -41,12 +41,11 @@ export function decodeRlcd(input: DemoInput, plan: RlcdPlan, raw: unknown) {
     const field = plan.fields[name];
     const decision = response.parsed_json[name];
     if (!field || !decision) throw new Fault('invalid_provider_output', 502);
-    let value: string | number | boolean;
     if (typeof decision.value !== 'string') throw new Fault('invalid_provider_output', 502);
     const index = field.choices.indexOf(decision.value);
     const selected = field.values[index];
     if (index === -1 || selected === undefined) throw new Fault('invalid_provider_output', 502);
-    value = selected;
+    const value = selected;
     modelResult[name] = value;
     reportedFieldScores[name] = { value, reportedProbability: decision.prob,
       collision: response.collision_fields.includes(name) };

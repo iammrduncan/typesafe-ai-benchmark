@@ -96,7 +96,8 @@ The repository's benchmark uses the same recorded input order as the historical
 Qwen/Jev run, two concurrent callers for static scenes, and one caller for stateful
 scenes. The single worker serializes actual model calls. It uses no warmup requests,
 automatic retries or hidden fallback and preserves failures and the driving-deadline
-cancellation. Reproduce with:
+cancellation. See the [published mapping v2 run](benchmarks/rlcd-2026-09-19-v2/README.md)
+for raw results and comparison with the original mapping. Reproduce with:
 
 ```sh
 npm run benchmark:rlcd -- .artifacts/rlcd-benchmark-new

@@ -20,7 +20,7 @@ const reports = [], sources = [], all = [];
 for (const { id: scene } of scenes) {
   const file = `${scene}-rlcd.json`, bytes = readFileSync(`${directory}/${file}`);
   const raw = JSON.parse(bytes.toString()); assert.equal(raw.mode, 'live'); assert.equal(raw.datasetVersion, 3);
-  assert.equal(raw.mappingVersion, 'rlcd-scenes-v1'); assert.equal(raw.runs.length, 1);
+  assert.equal(raw.mappingVersion, 'rlcd-scenes-v2'); assert.equal(raw.runs.length, 1);
   const run = raw.runs[0]; assert.equal(run.scene, scene); assert.equal(run.model, 'qwen-2.5-1.5b-rlcd');
   const events = z.array(eventSchema).min(1).parse(run.events); run.events = events;
   assert.deepEqual(run.requestOrder, events.map(event => event.item.id));

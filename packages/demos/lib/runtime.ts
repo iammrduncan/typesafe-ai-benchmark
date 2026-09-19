@@ -113,7 +113,7 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
           providerModel: `${rlcdRelease.weightsRepository}@${rlcdRelease.weightsRevision}`,
           ...output, elapsedMs: performance.now() - started, usage: null, estimatedCostUsd: 0,
           calls, providerCalls: 1, contract: parallelPlan, route: 'local:rlcd/parallel',
-          mappingVersion: 'rlcd-scenes-v1', costNote: 'No API fees; local hardware and electricity excluded.',
+          mappingVersion: 'rlcd-scenes-v2', costNote: 'No API fees; local hardware and electricity excluded.',
           usageNote: 'The engine reports field scores, not token counts. Collision-path scores are synthetic and all scores are vendor-reported, not benchmark-validated calibration.' } };
       }
       if (nativePlan && !stub) {
@@ -147,7 +147,7 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
         usage, estimatedCostUsd: 0, calls, providerCalls: 1, contract: localPlan, route: 'local:needle/complete', mappingVersion: 'needle-scenes-v1' } };
       if (parallelPlan) return { status: 200, body: { mode: 'fixture', model, result,
         decision: applyDecision(input, result), elapsedMs, usage, estimatedCostUsd: 0, calls,
-        providerCalls: 1, contract: parallelPlan, route: 'local:rlcd/parallel', mappingVersion: 'rlcd-scenes-v1' } };
+        providerCalls: 1, contract: parallelPlan, route: 'local:rlcd/parallel', mappingVersion: 'rlcd-scenes-v2' } };
       if (nativePlan) {
         if (!record(result)) throw new Error('Invalid fixture');
         const { result: decoded, native } = fixtureJev(nativePlan, result);

@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { readContract, readNativeContract, readNeedleContract, type ContractSnapshot } from '../../lib/theater/contract-view';
+import { readContract, readNativeContract, readNeedleContract, readRlcdContract, type ContractSnapshot } from '../../lib/theater/contract-view';
 import { JsonCode } from './json-code';
 
 export function ContractDialog({ snapshot, onClose }: { snapshot: ContractSnapshot; onClose: () => void }) {
@@ -10,6 +10,7 @@ export function ContractDialog({ snapshot, onClose }: { snapshot: ContractSnapsh
   const contract = readContract(snapshot.request);
   const native = readNativeContract(snapshot.request);
   const needle = readNeedleContract(snapshot.request);
+  const rlcd = readRlcdContract(snapshot.request);
   useEffect(() => {
     const element = dialog.current;
     element?.showModal();
@@ -29,7 +30,7 @@ export function ContractDialog({ snapshot, onClose }: { snapshot: ContractSnapsh
     <header className="contract-heading"><div><span>THE CONTRACT</span><h2 id="contract-title">{snapshot.title}</h2>
       <p id="contract-source">{snapshot.source}{snapshot.requestId ? ` · ${snapshot.requestId}` : ''} · snapshot at open</p></div>
       <button type="button" className="contract-close" aria-label="Close contract" onClick={onClose}>Close ×</button></header>
-    <div className="contract-meta"><code>{needle ? 'LOCAL needle.complete' : native ? 'POST /v1/systemone' : 'POST /v1/chat/completions'}</code><span>{native?.model ?? contract?.model}</span><b>{needle ? 'FORCED STRUCTURED CALL' : native ? 'NATIVE QUESTIONS' : contract?.format.json_schema.strict ? 'STRICT OUTPUT' : 'OUTPUT CONTRACT'}</b></div>
+    <div className="contract-meta"><code>{needle ? 'LOCAL needle.complete' : rlcd ? 'LOCAL rlcd.parallel' : native ? 'POST /v1/systemone' : 'POST /v1/chat/completions'}</code><span>{native?.model ?? contract?.model}</span><b>{needle ? 'FORCED STRUCTURED CALL' : rlcd ? 'PARALLEL CONSTRAINED' : native ? 'NATIVE QUESTIONS' : contract?.format.json_schema.strict ? 'STRICT OUTPUT' : 'OUTPUT CONTRACT'}</b></div>
     <nav className="contract-tabs" aria-label="Contract views">{([
       ['rules', 'Choices & rules'], ['schema', native ? 'Native questions' : 'JSON schema'], ['request', 'Full request'],
     ] as const).map(([id, label]) => <button key={id} type="button" aria-pressed={view === id} onClick={() => setView(id)}>{label}</button>)}</nav>
@@ -44,7 +45,7 @@ export function ContractDialog({ snapshot, onClose }: { snapshot: ContractSnapsh
           {field.description && <p>{field.description}</p>}
         </article>)}</div> : <p>The readable summary is unavailable. Open Full request to inspect the recorded JSON.</p>}
         {snapshot.scoreThreshold !== undefined && <aside className="contract-display-policy"><b>Scene display rule · accuracy &gt; {snapshot.scoreThreshold}%</b><p>The green cells and valid-answer count use this adjustable threshold. The model’s <code>valid</code> field separately checks complete content and formatting compliance.</p></aside>}
-        <p className="contract-enforcement">{needle ? 'Needle runs locally at 20 layers with one record-only tool and forced selection enabled. No tool is executed. Every field is validated locally; refusals and invalid output fail. The engine’s reasoning is discarded. Static scenes reuse reset workers; routing starts a process per hop. Cold startup and queue wait are included in timing; token counts and first-token timing are not reported. This mapping differs from the cloud prompts.' : native ? 'One native TypeSafe request evaluates all questions. Choice labels map directly; Noul values above 0.5 become true. Scoring sums rubric points for criteria above 0.5. Native probabilities remain in exports.' : 'Extra fields are rejected. The proxy translates choices into numeric slots, validates the returned numbers, and reconstructs this typed result.'} Type validity does not guarantee a correct judgment.</p>
+        <p className="contract-enforcement">{needle ? 'Needle runs locally at 20 layers with one record-only tool and forced selection enabled. No tool is executed. Every field is validated locally; refusals and invalid output fail. The engine’s reasoning is discarded. Static scenes reuse reset workers; routing starts a process per hop. Cold startup and queue wait are included in timing; token counts and first-token timing are not reported. This mapping differs from the cloud prompts.' : rlcd ? 'RLCD runs locally with compact scene context and semantic classifier labels. It batches the fields inside one request; independent inputs remain serialized. Labels are mapped back through the unchanged scene validator, and judge criteria are summed deterministically. Reported field scores are diagnostics, not benchmark-validated calibration.' : native ? 'One native TypeSafe request evaluates all questions. Choice labels map directly; Noul values above 0.5 become true. Scoring sums rubric points for criteria above 0.5. Native probabilities remain in exports.' : 'Extra fields are rejected. The proxy translates choices into numeric slots, validates the returned numbers, and reconstructs this typed result.'} Type validity does not guarantee a correct judgment.</p>
       </> : <pre className="theater-code contract-json"><JsonCode value={view === 'schema' ? needle?.tools ?? native?.questions ?? contract?.format ?? snapshot.request : snapshot.request}/></pre>}
     </div>
     <footer className="contract-footer"><span>Read only. Opening this view makes no model call.</span><button type="button" onClick={() => { void copyRequest(); }} aria-live="polite">{copied}</button></footer>

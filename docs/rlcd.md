@@ -38,17 +38,24 @@ launcher discovers the artifacts. No model files or credentials are committed.
 ## Mapping and execution
 
 Every existing scene still owns its strict JSON Schema and final Zod/application
-validator. The adapter maps:
+validator. Mapping version `rlcd-scenes-v2` treats the upstream engine as what it
+actually is—a first-token classifier—not as a general JSON generator. The adapter:
 
-- string enums directly to RLCD enum fields;
-- booleans directly to RLCD boolean fields;
-- bounded integers to explicit string choices, then back to integers before final
-  validation.
+- removes IDs and unrelated policy/state fields from the classifier context while
+  retaining the evidence needed for that scene;
+- uses collision-resistant semantic decision labels, then maps them back to the
+  unchanged public string, boolean and integer values;
+- evaluates judge criteria as parallel `YES` / `NO` fields and sums their declared
+  weights into the public accuracy score; validity is true only when every criterion
+  is satisfied;
+- keeps home outputs as deltas, with an explicit `UNCHANGED` option for every
+  device field.
 
-All properties must be required, unknown output properties are rejected, and an
-integer domain may contain at most 255 values. There is no retry, repair or fallback.
-The response must contain exactly one value for every field and pass the unchanged
-scene validator before the demo applies it.
+All direct properties must be required, unknown model output properties are rejected,
+and a direct integer domain may contain at most 255 values. The judge's internal
+criterion fields and deterministic weighted aggregation are recorded in the request
+contract. There is no retry, repair, fixture lookup or fallback. The mapped public
+result must still pass the unchanged scene validator before the demo applies it.
 
 The upstream engine performs one context prefill, broadcasts its KV cache across
 the fields in that request, and evaluates the field suffixes as a batch. That is
@@ -67,7 +74,7 @@ downloads.
 
 ## Scores and limitations
 
-The engine returns a winning score for each field. For choices whose first tokens
+The engine returns a winning score for each model field. For choices whose first tokens
 are distinct, that value is a softmax over the constrained candidates' next-token
 logits. When candidates collide at the first token—such as multi-digit integer
 choices—the upstream code follows an argmax continuation, falls back to the first
@@ -77,7 +84,13 @@ Exports therefore call these values `reportedFieldScores`. They are diagnostics,
 not verified calibrated probabilities. Collision fields are marked per request and
 counted in benchmark summaries. The benchmark separately reports type validity,
 fixture agreement and latency; a structurally valid answer is not evidence of a
-correct judgment.
+correct judgment. Version 2 deliberately uses distinct first-token labels for the
+published workload and records any future collision detected by the pinned tokenizer.
+
+The compact translation materially improves the guardrail and approval workloads,
+but it does not turn the base 1.5B instruct model into a reliable general judge,
+planner or controller. Multi-field exact match is particularly harsh, and correlated
+field errors remain possible because all suffix decisions share one semantic prefill.
 
 The repository's benchmark uses the same recorded input order as the historical
 Qwen/Jev run, two concurrent callers for static scenes, and one caller for stateful

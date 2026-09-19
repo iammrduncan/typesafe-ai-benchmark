@@ -112,7 +112,7 @@ try {
       concurrency: ['navigate', 'drive', 'home'].includes(scene) ? 1 : 2, events, ...(car ? { car } : {}),
       requestOrder: events.map(event => event.item.id), totals: requestTotals(events) };
     writeFileSync(`${directory}/${scene}-rlcd.json`, JSON.stringify({ generatedAt: new Date().toISOString(),
-      model: 'qwen-2.5-1.5b-rlcd', mode: 'live', datasetVersion: 3, mappingVersion: 'rlcd-scenes-v1',
+      model: 'qwen-2.5-1.5b-rlcd', mode: 'live', datasetVersion: 3, mappingVersion: 'rlcd-scenes-v2',
       measurement: 'Direct demo runtime; no browser/HTTP. Two concurrent callers feed one persistent, serialized MLX worker. No warmups, retries or fallback.', runs: [run] }, null, 2) + '\n');
     process.stdout.write(`${scene}: ${events.filter(event => event.status === 'validated').length}/${events.length} validated, ${(run.elapsedMs / 1000).toFixed(2)}s\n`);
   }

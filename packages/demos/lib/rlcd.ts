@@ -35,27 +35,27 @@ export function decodeRlcd(input: DemoInput, plan: RlcdPlan, raw: unknown) {
     || response.collision_fields.some(name => !Object.hasOwn(plan.fields, name))) {
     throw new Fault('invalid_provider_output', 502);
   }
-  const result: Record<string, string | number | boolean> = {};
+  const modelResult: Record<string, string | number | boolean> = {};
   const reportedFieldScores: Record<string, { value: string | number | boolean; reportedProbability: number; collision: boolean }> = {};
   for (const name of names) {
     const field = plan.fields[name];
     const decision = response.parsed_json[name];
     if (!field || !decision) throw new Fault('invalid_provider_output', 502);
     let value: string | number | boolean;
-    if (field.type === 'boolean') {
-      if (typeof decision.value !== 'boolean') throw new Fault('invalid_provider_output', 502);
-      value = decision.value;
-    } else {
-      if (typeof decision.value !== 'string') throw new Fault('invalid_provider_output', 502);
-      const index = field.choices.indexOf(decision.value);
-      const selected = field.values[index];
-      if (index === -1 || selected === undefined) throw new Fault('invalid_provider_output', 502);
-      value = selected;
-    }
-    result[name] = value;
+    if (typeof decision.value !== 'string') throw new Fault('invalid_provider_output', 502);
+    const index = field.choices.indexOf(decision.value);
+    const selected = field.values[index];
+    if (index === -1 || selected === undefined) throw new Fault('invalid_provider_output', 502);
+    value = selected;
+    modelResult[name] = value;
     reportedFieldScores[name] = { value, reportedProbability: decision.prob,
       collision: response.collision_fields.includes(name) };
   }
+  const result: Record<string, string | number | boolean> = plan.mapping.kind === 'judge_criteria'
+    ? { accuracy: plan.mapping.criteria.reduce((sum, criterion) => sum
+      + (modelResult[criterion.field] === true ? criterion.points : 0), 0),
+      valid: plan.mapping.criteria.every(criterion => modelResult[criterion.field] === true) }
+    : modelResult;
   const decision = applyDecision(input, result);
   return { result, decision, reportedFieldScores, rlcdMetrics: {
     engineElapsedMs: response.elapsed_ms,

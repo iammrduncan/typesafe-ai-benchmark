@@ -31,6 +31,13 @@ model's input/output prices appear beneath the dropdown. Selection is locked
 during a run; changing it clears prior results. Requests, exports and estimates
 use the chosen model. Qwen is the default; unknown model names fail before inference.
 
+On Apple Silicon, `npm run setup:rlcd` installs the pinned **Qwen 2.5 1.5B ·
+RLCD Local** option. The linked `Qwen-2.5-1B-RLCD` repository contains the decoding
+engine rather than weights; the adapter therefore identifies its actual pinned
+`mlx-community/Qwen2.5-1.5B-Instruct-4bit` weights separately. It batches the fields
+inside one structured decision, while independent inputs queue through one MLX
+worker. See [setup, execution semantics and limitations](../../docs/rlcd.md).
+
 **Jev · TypeSafe** uses the real native TypeSafe API when `JEV_KEY` (or
 `TYPESAFE_API_KEY`) is configured. Unconfigured models are disabled. Jev-only
 setups default to Jev. [Native mapping, response validation and cost limits](../../docs/jev.md).
@@ -118,6 +125,10 @@ its actual authenticated HTTP routes over loopback. Provider and proxy credentia
 never enter browser bundles. Cerebras output passes the numeric codec/type gate;
 native Jev answers pass their own probability/answer checks and the same final
 scene validators.
+RLCD converts string enums, booleans and bounded integers into the engine's native
+field schema, then restores and validates the exact scene object locally. Its field
+scores are retained as vendor-reported diagnostics, not treated as benchmark-proven
+calibrated probabilities.
 Each Cerebras scene uses one joint OpenAI-schema judgment per request; Jev sends
 one native request containing all questions for the same scene item. The standalone
 API continues to support both OpenAI and TypeSafe endpoints.

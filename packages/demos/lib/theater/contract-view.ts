@@ -4,6 +4,7 @@ import type { DemoModel } from '../models';
 import { scenes, type SceneId } from './data';
 import { jevPlan } from '../jev';
 import { needlePlan } from '../needle-plan';
+import { rlcdPlan } from '../rlcd-plan';
 
 export type ContractSnapshot = {
   title: string;
@@ -25,6 +26,8 @@ export function contractSnapshot(input: {
     request: input.recorded ?? (input.model === 'needle-3'
       ? needlePlan({ id: input.scene, model: input.model, text: JSON.stringify(input.context) }) : input.model === 'jev-latest'
       ? jevPlan({ id: input.scene, model: input.model, text: JSON.stringify(input.context) }).payload
+      : input.model === 'qwen-2.5-1.5b-rlcd'
+      ? rlcdPlan({ id: input.scene, model: input.model, text: JSON.stringify(input.context) })
       : prepare({ id: input.scene, model: input.model, text: JSON.stringify(input.context) }).payload),
     ...(input.scene === 'judge' && input.scoreThreshold !== undefined ? { scoreThreshold: input.scoreThreshold } : {}),
   };
@@ -52,8 +55,12 @@ const displayField = z.object({ type: z.string(), description: z.string().option
 
 export function readContract(request: unknown) {
   const needle = readNeedleContract(request);
-  const parsed = displayRequest.safeParse(needle ? { model: needle.model, response_format: { type: 'json_schema',
-    json_schema: { name: needle.tools[0]?.name, strict: true, schema: needle.tools[0]?.parameters } } } : request);
+  const rlcd = readRlcdContract(request);
+  const local = needle ? { model: needle.model, response_format: { type: 'json_schema',
+    json_schema: { name: needle.tools[0]?.name, strict: true, schema: needle.tools[0]?.parameters } } }
+    : rlcd ? { model: rlcd.model, response_format: { type: 'json_schema',
+      json_schema: { name: 'parallel_constrained', strict: true, schema: rlcd.schema } } } : request;
+  const parsed = displayRequest.safeParse(local);
   if (!parsed.success) return undefined;
   const format = parsed.data.response_format;
   const schema = format.json_schema.schema;
@@ -67,6 +74,19 @@ export function readNeedleContract(request: unknown) {
   const parsed = z.object({ model: z.literal('needle-3'), forced: z.literal(true),
     tools: z.array(z.object({ name: z.string(), description: z.string(), parameters: z.unknown() })).length(1),
     revision: z.string(), depth: z.literal(20), max_new_tokens: z.literal(512), fail_input_overflow: z.literal(true),
+  }).safeParse(request);
+  return parsed.success ? parsed.data : undefined;
+}
+
+export function readRlcdContract(request: unknown) {
+  const parsed = z.object({
+    model: z.literal('qwen-2.5-1.5b-rlcd'),
+    engine: z.object({ repository: z.string(), revision: z.string() }),
+    weights: z.object({ repository: z.string(), revision: z.string() }),
+    mode: z.literal('parallel_constrained'), temperature: z.literal(1), input: z.string(),
+    schema: z.object({ type: z.literal('object'), properties: z.record(z.string(), z.unknown()),
+      required: z.array(z.string()), additionalProperties: z.literal(false) }),
+    fields: z.record(z.string(), z.unknown()),
   }).safeParse(request);
   return parsed.success ? parsed.data : undefined;
 }

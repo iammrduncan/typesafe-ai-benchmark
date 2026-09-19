@@ -1,0 +1,6 @@
+{
+  "engineRepository": "harshatheg/Qwen-2.5-1B-RLCD",
+  "engineRevision": "2af86848be75847ccb3553b0941cc51d6ef7e4e9",
+  "weightsRepository": "mlx-community/Qwen2.5-1.5B-Instruct-4bit",
+  "weightsRevision": "8b403126fc14f14cfc99bb4cfa72ecbc129ea677"
+}

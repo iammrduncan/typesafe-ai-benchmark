@@ -16,16 +16,25 @@ import { jevPlan, requestJev, fixtureJev } from './jev';
 import { needlePlan, needleRevision } from './needle-plan';
 import { requestNeedle, type NeedleConfig } from './needle';
 import { createNeedleRunner } from './needle-worker';
+import { rlcdPlan } from './rlcd-plan';
+import { createRlcdRunner, type RlcdConfig } from './rlcd';
+import rlcdRelease from '../rlcd-release.json';
 
-export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: string; jevEndpoint?: string; needle?: NeedleConfig; stub?: boolean } = {}) {
+export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: string; jevEndpoint?: string;
+  needle?: NeedleConfig; rlcd?: RlcdConfig; stub?: boolean } = {}) {
   const stub = options.stub ?? false;
-  if (!stub && !options.apiKey && !options.jevApiKey && !options.needle) throw new Error('Configure a cloud provider or install Needle');
-  const availableModels = demoModel.options.filter(model => stub || (model === 'needle-3' ? options.needle : model === 'jev-latest' ? options.jevApiKey : options.apiKey));
-  const initialModel = options.apiKey || stub ? defaultModel : options.jevApiKey ? 'jev-latest' : 'needle-3';
+  if (!stub && !options.apiKey && !options.jevApiKey && !options.needle && !options.rlcd) {
+    throw new Error('Configure a cloud provider or install a local model');
+  }
+  const availableModels = demoModel.options.filter(model => stub || (model === 'needle-3' ? options.needle
+    : model === 'qwen-2.5-1.5b-rlcd' ? options.rlcd : model === 'jev-latest' ? options.jevApiKey : options.apiKey));
+  const initialModel = options.apiKey || stub ? defaultModel : options.jevApiKey ? 'jev-latest'
+    : options.needle ? 'needle-3' : 'qwen-2.5-1.5b-rlcd';
   const token = randomBytes(24).toString('hex'), proxyKey = randomBytes(24).toString('hex');
   let calls = 0, active = 0;
   const localControllers = new Set<AbortController>();
   const needleRunner = options.needle && !stub ? createNeedleRunner(options.needle) : undefined;
+  const rlcdRunner = options.rlcd && !stub ? createRlcdRunner(options.rlcd) : undefined;
   const upstream = stub ? Fastify({ logger: false }) : undefined;
   let providerEndpoint: string | undefined;
   if (upstream) {
@@ -66,12 +75,14 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
     if (stub && !(theaterId(input.id) ? theaterFixtureAllowed(input.id, input.text) : fixtureDispatch(input.text))) return reply.code(400).send({ error: 'Fixture mode uses fixed inputs. Start live mode to edit.' });
     const nativePlan = model === 'jev-latest' ? jevPlan(input) : undefined;
     const localPlan = model === 'needle-3' ? needlePlan(input) : undefined;
-    const inferenceModel = model === 'jev-latest' || model === 'needle-3' ? defaultModel : model;
+    const parallelPlan = model === 'qwen-2.5-1.5b-rlcd' ? rlcdPlan(input) : undefined;
+    const inferenceModel = model === 'jev-latest' || model === 'needle-3' || model === 'qwen-2.5-1.5b-rlcd'
+      ? defaultModel : model;
     const planned = prepare({ ...input, model: inferenceModel });
     const data = chatRequest.parse(planned.payload);
     const plan = { messages: data.messages, jobs: [compileSchema(data.response_format.json_schema.schema).job] };
     // Validate every provider request before dispatch, without imposing a lifetime quota.
-    if ((!nativePlan && !localPlan) || stub) for (const job of plan.jobs) providerBody(inferenceModel, plan.messages, job);
+    if ((!nativePlan && !localPlan && !parallelPlan) || stub) for (const job of plan.jobs) providerBody(inferenceModel, plan.messages, job);
     if (active >= 5) return reply.code(429).send({ error: 'Too many requests in flight. Wait for an active request to finish.' });
     active++; calls += plan.jobs.length;
     const started = performance.now();
@@ -88,6 +99,22 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
           elapsedMs: performance.now() - started, usage: null, estimatedCostUsd: 0, calls, providerCalls: 1,
           contract: localPlan, route: 'local:needle/complete', mappingVersion: 'needle-scenes-v1',
           costNote: 'No API fees; local hardware and electricity excluded.', usageNote: 'Native runtime reports token rates, not token counts.' } };
+      }
+      if (parallelPlan && !stub) {
+        if (!rlcdRunner) throw new Fault('provider_unavailable', 502);
+        const abort = new AbortController();
+        localControllers.add(abort);
+        let output: Awaited<ReturnType<typeof rlcdRunner.request>>;
+        try { output = await rlcdRunner.request(input, parallelPlan,
+          AbortSignal.any([signal, abort.signal, AbortSignal.timeout(16_000)])); }
+        finally { localControllers.delete(abort); }
+        signal.throwIfAborted();
+        return { status: 200, body: { mode: 'live', model,
+          providerModel: `${rlcdRelease.weightsRepository}@${rlcdRelease.weightsRevision}`,
+          ...output, elapsedMs: performance.now() - started, usage: null, estimatedCostUsd: 0,
+          calls, providerCalls: 1, contract: parallelPlan, route: 'local:rlcd/parallel',
+          mappingVersion: 'rlcd-scenes-v1', costNote: 'No API fees; local hardware and electricity excluded.',
+          usageNote: 'The engine reports field scores, not token counts. Collision-path scores are synthetic and all scores are vendor-reported, not benchmark-validated calibration.' } };
       }
       if (nativePlan && !stub) {
         if (!options.jevApiKey) throw new Fault('provider_unavailable', 502);
@@ -118,6 +145,9 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
       const result = parseJson(envelope.choices[0]?.message.content ?? '');
       if (localPlan) return { status: 200, body: { mode: 'fixture', model, result, decision: applyDecision(input, result), elapsedMs,
         usage, estimatedCostUsd: 0, calls, providerCalls: 1, contract: localPlan, route: 'local:needle/complete', mappingVersion: 'needle-scenes-v1' } };
+      if (parallelPlan) return { status: 200, body: { mode: 'fixture', model, result,
+        decision: applyDecision(input, result), elapsedMs, usage, estimatedCostUsd: 0, calls,
+        providerCalls: 1, contract: parallelPlan, route: 'local:rlcd/parallel', mappingVersion: 'rlcd-scenes-v1' } };
       if (nativePlan) {
         if (!record(result)) throw new Error('Invalid fixture');
         const { result: decoded, native } = fixtureJev(nativePlan, result);
@@ -136,5 +166,6 @@ export async function createDemoRuntime(options: { apiKey?: string; jevApiKey?: 
     }
     finally { active--; }
   };
-  return { config, run, async close() { for (const abort of localControllers) abort.abort(); await needleRunner?.close(); await proxy?.close(); await upstream?.close(); } };
+  return { config, run, async close() { for (const abort of localControllers) abort.abort();
+    await Promise.all([needleRunner?.close(), rlcdRunner?.close()]); await proxy?.close(); await upstream?.close(); } };
 }

@@ -15,6 +15,7 @@
   ],
   "scripts": {
     "setup:needle": "node packages/demos/scripts/setup-needle.mjs",
+    "setup:rlcd": "node packages/demos/scripts/setup-rlcd.mjs",
     "dev": "npm run build -w @decision/api && npm run dev -w @decision/demos",
     "dev:live": "npm run build -w @decision/api && npm run dev:live -w @decision/demos",
     "dev:api": "npm run dev -w @decision/api",
@@ -29,6 +30,8 @@
     "examples:live": "npm run examples:live -w @decision/api --",
     "benchmark": "npm run benchmark -w @decision/api --",
     "benchmark:live": "npm run benchmark:live -w @decision/api --",
+    "benchmark:rlcd": "node --import tsx scripts/benchmark-rlcd.mjs",
+    "summarize:rlcd": "node --import tsx scripts/summarize-rlcd.mjs",
     "showcase": "npm run dev",
     "showcase:live": "npm run dev:live",
     "start:demos:live": "npm run start:live -w @decision/demos"

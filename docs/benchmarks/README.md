@@ -15,19 +15,19 @@ the figures below come from the newly captured JSON exports.
 
 | Measurement | Qwen 3.8 27B · Cerebras | Jev · TypeSafe | Needle 3 · local¹ |
 | --- | ---: | ---: | ---: |
-| Validated / dispatched | 475 / 476 | 479 / 480 | 467 / 483 |
+| Validated / dispatched | 475 / 476 | 479 / 480 | 470 / 486 |
 | Failed / canceled at driving deadline | 0 / 1 | 0 / 1 | 15 / 1 |
-| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms | 174 / 479 / 1,168 ms |
+| Successful request p50 / p95 / p99 | 215 / 452 / 912 ms | 176 / 336 / 532 ms | 161 / 444 / 1,095 ms |
 | Input / output tokens | 305,915 / 5,185 | 297,984 / 43,836 | Unavailable |
 | Known estimated API cost | $0.310581 | $0.011919 | $0² |
-| Sum of scene durations | 70.02 s | 55.54 s | 59.79 s |
+| Sum of scene durations | 70.02 s | 55.54 s | 55.79 s |
 
 ¹ Needle measured separately **2026-09-19 UTC**, directly through the demo runtime
 on an Apple M4 Pro; Qwen/Jev measured in the browser on September 17. Same contracts,
 static input order and concurrency, but no browser/HTTP overhead or competing lane
 for Needle. This is **not a controlled speed ranking**.
 ² Zero API fees excludes local hardware/electricity. Needle's median native decode
-rate was **887 tok/s**, distinct from its **174 ms** median successful request.
+rate was **990 tok/s**, distinct from its **161 ms** median successful request.
 [Needle mapping-v2 results and prior baselines](needle-capped-2026-09-19/README.md).
 
 ### Qwen 2.5 1.5B RLCD local follow-up
@@ -73,8 +73,8 @@ percentiles use nearest rank and exclude cancellations. No decode-speed claim is
 | Scoring | 93/100 | 100/100 | 0/100 |
 | Home | 24/24 | 15/24 | 0/24 |
 
-Needle reached junction 4 from 20 in eight valid hops. Driving produced 50 valid
-controls, covered 13.96 m and had one collision. Its schema-sized caps fixed
+Needle reached junction 4 from 20 in eight valid hops. Driving produced 53 valid
+controls, covered 13.79 m and had one collision. Its schema-sized caps fixed
 conflicting-call failures and wasted generation, but the exact-match table shows
 that type validity did not fix every judgment. Invalid outputs count as non-matches;
 all mismatches remain in the raw results.
